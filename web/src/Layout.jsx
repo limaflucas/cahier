@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import SearchBar from './components/SearchBar.jsx';
+import VersionBadge from './components/VersionBadge.jsx';
 
 const MENU = [
   { to: '/mes-mots', label: 'Mes mots' },
@@ -57,6 +58,7 @@ export default function Layout({ wide = false }) {
           <Outlet context={{ search }} />
         </main>
       </div>
+      <VersionBadge />
     </div>
   );
 }

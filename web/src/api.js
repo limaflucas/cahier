@@ -31,5 +31,7 @@ export const api = {
   unsave: (word) => request(`/my-words/${enc(word)}`, { method: 'DELETE' }),
   conjugation: (verb, signal) => request(`/conjugation/${enc(verb)}`, { signal }),
   memoirQuestion: (query, signal) => request(`/memoir/question?${memoirQuery(query)}`, { signal }),
+  flags: (signal) => request('/flags', { signal }),
+  version: (signal) => request('/version', { signal }),
   randomVerb: (exclude) => request(`/random-verb${exclude ? `?exclude=${enc(exclude)}` : ''}`),
 };

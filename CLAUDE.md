@@ -6,6 +6,9 @@ Personal French study notebook. Express 4 + node:sqlite API, React 19 + Vite SPA
 
 - **Trunk-based:** `master` is the trunk and is protected. Work on a short-lived branch, open a PR on `gitea.homelab/homelab/cahier`, squash-merge once CI is green. Never push to `master`.
 - **Feature flags:** unfinished or risky work merges behind an Unleash flag that defaults to off. Remove the flag once the feature is fully rolled out.
+  - Server: `flags.isEnabled(name, context)`; browser: `useFlag(name)` (from `GET /api/flags`).
+  - Precedence: `FLAGS_OVERRIDE` (`name=on|off,…`, an emergency kill switch) → Unleash → off.
+  - Unleash at https://unleash.cahier.homelab: environments `development` (local `.env`) and `production`. The context carries `sessionId` (sticky cookie), `remoteAddress` and `userAgent`, for gradual rollouts and constraints.
 - **Test first, every feature:**
   1. Design and write unit, smoke and e2e tests for it.
   2. Run them; they must all fail.

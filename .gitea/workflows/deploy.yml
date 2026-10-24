@@ -19,4 +19,14 @@ jobs:
           echo "cahier.homelab runs ${commit:-nothing}, expected $GITHUB_SHA" >&2
           exit 1
       - name: smoke against https://cahier.homelab
-        run: BASE_URL=https://cahier.homelab EXPECTED_COMMIT=$GITHUB_SHA npm run test:smoke
+        env:
+          BASE_URL: https://cahier.homelab
+          EXPECTED_FLAGS: version-badge
+          UNLEASH_HEALTH_URL: https://unleash.cahier.homelab/health
+        run: |
+          for attempt in 1 2 3 4 5; do
+            EXPECTED_COMMIT=$GITHUB_SHA npm run test:smoke && exit 0
+            echo "attempt $attempt failed, services may still be starting" >&2
+            sleep 30
+          done
+          exit 1

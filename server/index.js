@@ -6,6 +6,7 @@ import { createApp } from './app.js';
 import { readBuildInfo } from './buildInfo.js';
 import { createConjugator } from './conjugator.js';
 import { createDictionary } from './dictionary.js';
+import { createFlags, createUnleashClient, parseOverrides } from './flags.js';
 import { loadLefff } from './lefff.js';
 import { createMemoir } from './memoir.js';
 import { createMyWords } from './myWords.js';
@@ -25,6 +26,8 @@ if (!findPrepositions) console.warn('ANTHROPIC_API_KEY not set: verb preposition
 
 const dictionary = createDictionary({ db, fetchDefinition, findPrepositions });
 const myWords = createMyWords(db);
+const unleash = createUnleashClient();
+if (!unleash) console.warn('UNLEASH_URL or UNLEASH_API_TOKEN not set: flags come from FLAGS_OVERRIDE only');
 const conjugator = createConjugator(loadLefff());
 
 const app = createApp({
@@ -37,11 +40,13 @@ const app = createApp({
   pronunciation: createPronunciation({ db, fetchAudioFiles }),
   staticDir: existsSync(spaDir) ? spaDir : undefined,
   build: readBuildInfo(),
+  flags: createFlags({ client: unleash, overrides: parseOverrides(process.env.FLAGS_OVERRIDE) }),
 });
 
 const server = app.listen(port, () => console.log(`server listening on http://localhost:${port}`));
 
 process.on('SIGTERM', () => server.close(() => {
+  unleash?.destroy();
   db.close();
   process.exit(0);
 }));
