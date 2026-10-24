@@ -18,5 +18,7 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$KEY" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
           echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > ~/.ssh/known_hosts
-          git push --force git@github.com:limaflucas/cahier.git HEAD:refs/heads/master
+          # origin/master, not HEAD: a tag push checks out the tagged commit, and
+          # pushing that as master would rewind the mirror.
+          git push --force git@github.com:limaflucas/cahier.git refs/remotes/origin/master:refs/heads/master
           git push --force --tags git@github.com:limaflucas/cahier.git
