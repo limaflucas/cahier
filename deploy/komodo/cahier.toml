@@ -15,6 +15,27 @@ linked_repo = "cahier"
 resource_path = ["deploy/komodo"]
 webhook_enabled = false
 
+[[build]]
+name = "cahier"
+[build.config]
+builder = "Bragi"
+linked_repo = "cahier"
+image_registry = [
+  { domain = "registry.homelab", account = "registry", organization = "homelab" }
+]
+webhook_enabled = false
+
+[[stack]]
+name = "cahier"
+[stack.config]
+swarm = "Homelab"
+linked_repo = "cahier"
+run_directory = "deploy"
+file_paths = ["compose.yaml"]
+registry_provider = "registry.homelab"
+registry_account = "registry"
+webhook_enabled = false
+
 [[stack]]
 name = "cahier-ci"
 [stack.config]
@@ -35,7 +56,14 @@ executions = [
 ]
 
 [[procedure.config.stage]]
+name = "Build"
+executions = [
+  { execution.type = "RunBuild", execution.params.build = "cahier" },
+]
+
+[[procedure.config.stage]]
 name = "Deploy"
 executions = [
+  { execution.type = "DeployStack", execution.params.stack = "cahier" },
   { execution.type = "DeployStackIfChanged", execution.params.stack = "cahier-ci" },
 ]

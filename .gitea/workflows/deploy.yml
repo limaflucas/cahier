@@ -1,0 +1,22 @@
+name: deploy
+on:
+  push:
+    branches: [master]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: wait for Komodo to roll out this commit
+        run: |
+          for i in $(seq 150); do
+            commit=$(curl -fsS --cacert "$NODE_EXTRA_CA_CERTS" https://cahier.homelab/api/version | sed -n 's/.*"commit":"\([^"]*\)".*/\1/p') || true
+            [ "$commit" = "$GITHUB_SHA" ] && exit 0
+            sleep 10
+          done
+          echo "cahier.homelab runs ${commit:-nothing}, expected $GITHUB_SHA" >&2
+          exit 1
+      - name: smoke against https://cahier.homelab
+        run: BASE_URL=https://cahier.homelab EXPECTED_COMMIT=$GITHUB_SHA npm run test:smoke

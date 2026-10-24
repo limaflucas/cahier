@@ -1,6 +1,9 @@
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import Anthropic from '@anthropic-ai/sdk';
 import { openDb } from './db.js';
 import { createApp } from './app.js';
+import { readBuildInfo } from './buildInfo.js';
 import { createConjugator } from './conjugator.js';
 import { createDictionary } from './dictionary.js';
 import { loadLefff } from './lefff.js';
@@ -12,6 +15,7 @@ import { fetchDefinition } from './reverso.js';
 import { createVerbPicker } from './verbPicker.js';
 
 const port = Number(process.env.PORT ?? 3000);
+const spaDir = fileURLToPath(new URL('../web/dist', import.meta.url));
 const db = openDb();
 
 const findPrepositions = process.env.ANTHROPIC_API_KEY
@@ -31,6 +35,13 @@ const app = createApp({
   verbPicker: createVerbPicker({ myWords, dictionary, conjugator }),
   memoir: createMemoir({ myWords, dictionary, conjugator }),
   pronunciation: createPronunciation({ db, fetchAudioFiles }),
+  staticDir: existsSync(spaDir) ? spaDir : undefined,
+  build: readBuildInfo(),
 });
 
-app.listen(port, () => console.log(`server listening on http://localhost:${port}`));
+const server = app.listen(port, () => console.log(`server listening on http://localhost:${port}`));
+
+process.on('SIGTERM', () => server.close(() => {
+  db.close();
+  process.exit(0);
+}));

@@ -1,4 +1,6 @@
+import { join } from 'node:path';
 import express from 'express';
+import { readBuildInfo } from './buildInfo.js';
 import { normalize } from './dictionary.js';
 import { UpstreamError } from './reverso.js';
 
@@ -12,9 +14,21 @@ function wordParam(req, res) {
   return null;
 }
 
-export function createApp({ db, dictionary, myWords, conjugator, verbPicker, memoir, pronunciation, logger = console }) {
+/**
+ * Builds the HTTP app: the JSON API under /api and, when staticDir is given, the built SPA.
+ * @param {object} deps services backing the API routes
+ * @param {string} [deps.staticDir] absolute path to the built SPA (web/dist)
+ * @param {{ name: string, version: string, commit: string }} [deps.build] what /api/version reports
+ * @returns {import('express').Express}
+ */
+export function createApp({
+  db, dictionary, myWords, conjugator, verbPicker, memoir, pronunciation,
+  staticDir, build = readBuildInfo(), logger = console,
+}) {
   const app = express();
   app.use(express.json());
+
+  app.get('/api/version', (_req, res) => res.json(build));
 
   app.get('/api/health', (_req, res) => {
     const { ok } = db.prepare('SELECT 1 AS ok').get();
@@ -89,6 +103,14 @@ export function createApp({ db, dictionary, myWords, conjugator, verbPicker, mem
     if (!question) return res.status(404).json({ error: 'not_enough_words' });
     res.json(question);
   }));
+
+  app.use('/api', (_req, res) => res.status(404).json({ error: 'not_found' }));
+
+  if (staticDir) {
+    app.use('/assets', express.static(join(staticDir, 'assets'), { immutable: true, maxAge: '1y' }));
+    app.use(express.static(staticDir, { index: false }));
+    app.get('*', (_req, res) => res.set('Cache-Control', 'no-cache').sendFile(join(staticDir, 'index.html')));
+  }
 
   app.use((err, _req, res, _next) => {
     if (err instanceof UpstreamError) {

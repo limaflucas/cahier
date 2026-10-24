@@ -1,0 +1,11 @@
+node_modules
+web/dist
+data
+*.db
+*.db-*
+.env
+.env.*
+test-results
+playwright-report
+.playwright-mcp
+.commit

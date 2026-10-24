@@ -17,10 +17,28 @@ jobs:
           gitleaks git --no-banner --redact .
           gitleaks dir --no-banner --redact .
 
-  test:
+  unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: npm ci
-      - name: unit
-        run: npm run test:unit
+      - run: npm run test:unit
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci && npm run build
+      - name: smoke against the production build
+        run: |
+          PORT=3100 DB_PATH=/tmp/smoke.db ANTHROPIC_API_KEY= npm start > /tmp/server.log 2>&1 &
+          for i in $(seq 30); do curl -fs http://localhost:3100/api/health > /dev/null && break; sleep 1; done
+          BASE_URL=http://localhost:3100 npm run test:smoke || { cat /tmp/server.log; exit 1; }

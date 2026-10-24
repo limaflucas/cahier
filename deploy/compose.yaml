@@ -1,0 +1,42 @@
+services:
+  app:
+    image: registry.homelab/homelab/cahier:latest
+    environment:
+      - TZ=America/Halifax
+    secrets:
+      - source: cahier_app_env
+        target: app.env
+    volumes:
+      - /mnt/docker-data/services/cahier/data:/data
+    networks:
+      - infra_public
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        order: stop-first
+        failure_action: rollback
+      rollback_config:
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+      labels:
+        - traefik.enable=true
+        - traefik.swarm.network=infra_public
+        - traefik.http.routers.cahier.rule=Host(`cahier.homelab`)
+        - traefik.http.services.cahier.loadbalancer.server.port=3000
+
+networks:
+  infra_public:
+    external: true
+
+secrets:
+  cahier_app_env:
+    external: true
+    name: cahier_app_env_v1

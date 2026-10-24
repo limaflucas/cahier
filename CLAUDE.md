@@ -20,8 +20,9 @@ Personal French study notebook. Express 4 + node:sqlite API, React 19 + Vite SPA
 - `server/`, `web/`: API and SPA.
 - `test/*.test.js`: unit (`npm run test:unit`).
 - `deploy/`: swarm stacks, act_runner config, Komodo resources (`deploy/komodo/*.toml`, applied by the `cahier` Resource Sync).
-- `.gitea/workflows/`: CI, GitHub mirror.
+- `test/smoke/`: smoke against `BASE_URL` (`npm run test:smoke`); `test/e2e/`: Playwright (`npm run test:e2e`).
+- `.gitea/workflows/`: CI (gitleaks, unit, e2e, smoke), post-deploy smoke, GitHub mirror.
 
 ## Deploy
 
-A merge to `master` fires the Gitea webhook → Komodo procedure `cahier-deploy` (sync → build → deploy).
+A merge to `master` fires the Gitea webhook → Komodo procedure `cahier-deploy` (sync → build → deploy). The `deploy` workflow then waits for https://cahier.homelab/api/version to report the merged commit and runs the smoke suite against it.

@@ -37,7 +37,7 @@ export default function Layout({ wide = false }) {
       <header className="border-b border-stone-200 bg-white">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 lg:gap-x-8 lg:px-6">
           <Link to="/" className="font-serif text-xl font-semibold text-stone-900 lg:w-48">
-            Dictionnaire
+            Cahier
           </Link>
           <div className="mx-auto w-full max-w-xl sm:w-auto sm:flex-1">
             <SearchBar query={search} onQueryChange={setSearch} />
