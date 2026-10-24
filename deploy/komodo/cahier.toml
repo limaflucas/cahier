@@ -47,13 +47,23 @@ webhook_enabled = false
 
 [[procedure]]
 name = "cahier-deploy"
-description = "Runs on every push to master: sync these resources, then roll out what changed."
+description = "Webhook target for pushes to master. Keep it stable: a sync can't update the procedure that is running it, so rollout steps live in cahier-rollout."
 
 [[procedure.config.stage]]
 name = "Sync"
 executions = [
   { execution.type = "RunSync", execution.params.sync = "cahier" },
 ]
+
+[[procedure.config.stage]]
+name = "Rollout"
+executions = [
+  { execution.type = "RunProcedure", execution.params.procedure = "cahier-rollout" },
+]
+
+[[procedure]]
+name = "cahier-rollout"
+description = "Builds the image and rolls out what changed."
 
 [[procedure.config.stage]]
 name = "Build"

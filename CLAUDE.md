@@ -25,4 +25,4 @@ Personal French study notebook. Express 4 + node:sqlite API, React 19 + Vite SPA
 
 ## Deploy
 
-A merge to `master` fires the Gitea webhook → Komodo procedure `cahier-deploy` (sync → build → deploy). The `deploy` workflow then waits for https://cahier.homelab/api/version to report the merged commit and runs the smoke suite against it.
+A merge to `master` fires the Gitea webhook → Komodo procedure `cahier-deploy` (sync, then `cahier-rollout`: build → deploy). Keep `cahier-deploy` unchanged: a sync cannot update the procedure running it. The `deploy` workflow then waits for https://cahier.homelab/api/version to report the merged commit and runs the smoke suite against it.
