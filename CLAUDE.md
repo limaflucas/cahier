@@ -22,6 +22,7 @@ Personal French study notebook. Express 4 + node:sqlite API, React 19 + Vite SPA
 
 - `server/`, `web/`: API and SPA.
 - `test/*.test.js`: unit (`npm run test:unit`).
+- `scripts/import-data.js`, `scripts/migrate-to-homelab.sh`: merge an older install into this one (idempotent).
 - `deploy/`: swarm stacks, act_runner config, Komodo resources (`deploy/komodo/*.toml`, applied by the `cahier` Resource Sync).
 - `test/smoke/`: smoke against `BASE_URL` (`npm run test:smoke`); `test/e2e/`: Playwright (`npm run test:e2e`).
 - `.gitea/workflows/`: CI (gitleaks, unit, e2e, smoke), post-deploy smoke, GitHub mirror.
