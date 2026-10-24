@@ -1,0 +1,41 @@
+[[repo]]
+name = "cahier"
+[repo.config]
+server = "vm-docker-bragi"
+git_provider = "gitea.homelab"
+git_account = "komodo"
+repo = "homelab/cahier"
+branch = "master"
+webhook_enabled = false
+
+[[resource_sync]]
+name = "cahier"
+[resource_sync.config]
+linked_repo = "cahier"
+resource_path = ["deploy/komodo"]
+webhook_enabled = false
+
+[[stack]]
+name = "cahier-ci"
+[stack.config]
+swarm = "Homelab"
+linked_repo = "cahier"
+run_directory = "deploy"
+file_paths = ["ci.compose.yaml"]
+webhook_enabled = false
+
+[[procedure]]
+name = "cahier-deploy"
+description = "Runs on every push to master: sync these resources, then roll out what changed."
+
+[[procedure.config.stage]]
+name = "Sync"
+executions = [
+  { execution.type = "RunSync", execution.params.sync = "cahier" },
+]
+
+[[procedure.config.stage]]
+name = "Deploy"
+executions = [
+  { execution.type = "DeployStackIfChanged", execution.params.stack = "cahier-ci" },
+]

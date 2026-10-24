@@ -1,16 +1,18 @@
 {
-  "name": "french-study",
+  "name": "cahier",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Personal French study app",
+  "description": "Cahier, a personal French study notebook",
   "scripts": {
     "dev": "concurrently -n server,web -c blue,magenta \"npm:dev:server\" \"npm:dev:web\"",
     "dev:server": "NODE_OPTIONS=--no-warnings node --env-file-if-exists=.env --watch server/index.js",
     "dev:web": "vite --config web/vite.config.js",
     "build": "vite build --config web/vite.config.js",
     "start": "NODE_OPTIONS=--no-warnings node --env-file-if-exists=.env server/index.js",
-    "test": "NODE_OPTIONS=--no-warnings node --test test/*.test.js"
+    "test": "npm run test:unit",
+    "test:unit": "NODE_OPTIONS=--no-warnings node --test test/*.test.js",
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null || true"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.134.0",
@@ -26,5 +28,8 @@
     "concurrently": "^10.0.6",
     "tailwindcss": "^4.3.3",
     "vite": "^8.3.4"
+  },
+  "engines": {
+    "node": ">=22.13"
   }
 }

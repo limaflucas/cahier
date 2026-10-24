@@ -1,0 +1,22 @@
+name: mirror
+on:
+  push:
+    branches: [master]
+    tags: ['*']
+
+jobs:
+  github:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: push to github.com/limaflucas/cahier
+        env:
+          KEY: ${{ secrets.GH_MIRROR_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > ~/.ssh/known_hosts
+          git push --force git@github.com:limaflucas/cahier.git HEAD:refs/heads/master
+          git push --force --tags git@github.com:limaflucas/cahier.git

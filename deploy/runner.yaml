@@ -1,0 +1,18 @@
+log:
+  level: info
+runner:
+  file: /data/.runner
+  capacity: 2
+  timeout: 1h
+  envs:
+    NODE_EXTRA_CA_CERTS: /etc/ssl/certs/homelab-ca.crt
+    GIT_SSL_CAINFO: /etc/ssl/certs/homelab-ca.crt
+  labels:
+    - ubuntu-latest:docker://node:22-bookworm
+cache:
+  enabled: false
+container:
+  options: -v /mnt/docker-data/services/homelab-ca/root_ca.crt:/etc/ssl/certs/homelab-ca.crt:ro
+  valid_volumes:
+    - /mnt/docker-data/services/homelab-ca/root_ca.crt
+  force_pull: false

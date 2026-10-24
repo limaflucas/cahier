@@ -1,0 +1,38 @@
+# Swarm configs are immutable: bump the config name suffix after editing runner.yaml.
+services:
+  runner:
+    image: gitea/act_runner:0.6.1
+    environment:
+      - TZ=America/Halifax
+      - CONFIG_FILE=/config.yaml
+      - GITEA_INSTANCE_URL=https://gitea.homelab
+      - GITEA_RUNNER_NAME=cahier
+      - GITEA_RUNNER_REGISTRATION_TOKEN_FILE=/run/secrets/cahier_runner_token
+    configs:
+      - source: runner_config
+        target: /config.yaml
+    secrets:
+      - cahier_runner_token
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/docker-data/services/cahier/runner:/data
+      - /mnt/docker-data/services/homelab-ca/root_ca.crt:/etc/ssl/certs/homelab-ca.crt:ro
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 256M
+      restart_policy:
+        condition: any
+        delay: 10s
+
+configs:
+  runner_config:
+    name: cahier_runner_config_v1
+    file: ./runner.yaml
+
+secrets:
+  cahier_runner_token:
+    external: true
+    name: cahier_runner_token_v1
