@@ -12,6 +12,7 @@ import ListenButton from '../components/ListenButton.jsx';
 import GameSummary from '../components/conjugation/GameSummary.jsx';
 import LevelPicker from '../components/conjugation/LevelPicker.jsx';
 import TenseTable from '../components/conjugation/TenseTable.jsx';
+import VerbMeanings from '../components/conjugation/VerbMeanings.jsx';
 
 const MOODS = groupByMood(TWIN_TENSES, ([simple]) => TENSES_BY_ID[simple].mood);
 
@@ -110,7 +111,10 @@ function Game({ board, level }) {
             <h1 lang="fr" className="font-serif text-5xl font-semibold text-stone-900">
               <HeadwordMark>{board.verb}</HeadwordMark>
             </h1>
-            <ListenButton text={board.verb} className="translate-y-1" />
+            <div className="flex translate-y-1 items-center">
+              <VerbMeanings verb={board.verb} />
+              <ListenButton text={board.verb} />
+            </div>
           </div>
           <Progress score={score} />
         </div>
