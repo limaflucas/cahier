@@ -3,15 +3,15 @@ services:
     image: registry.homelab/homelab/cahier:latest
     environment:
       - TZ=America/Halifax
-      - UNLEASH_URL=http://unleash:4242/api
+      - UNLEASH_URL=http://devflow_unleash:4242/api
     secrets:
       - source: cahier_app_env
         target: app.env
     volumes:
       - /mnt/docker-data/services/cahier/data:/data
     networks:
-      - internal
       - infra_public
+      - unleash
     deploy:
       mode: replicated
       replicas: 1
@@ -34,64 +34,13 @@ services:
         - traefik.http.routers.cahier.rule=Host(`cahier.homelab`)
         - traefik.http.services.cahier.loadbalancer.server.port=3000
 
-  unleash:
-    image: unleashorg/unleash-server:8.2.1
-    entrypoint: ["cahier-entrypoint", "docker-entrypoint.sh"]
-    command: ["node", "dist/server.js"]
-    environment:
-      - TZ=America/Halifax
-      - UNLEASH_URL=https://unleash.cahier.homelab
-      - DATABASE_SSL=false
-      - SEND_TELEMETRY=false
-      - LOG_LEVEL=warn
-    configs:
-      - source: entrypoint
-        target: /usr/local/bin/cahier-entrypoint
-        mode: 0555
-    secrets:
-      - source: cahier_unleash_env
-        target: unleash.env
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:4242/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 60s
-    networks:
-      - internal
-      - infra_public
-    deploy:
-      mode: replicated
-      replicas: 1
-      restart_policy:
-        condition: any
-        delay: 10s
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 192M
-      labels:
-        - traefik.enable=true
-        - traefik.swarm.network=infra_public
-        - traefik.http.routers.cahier-unleash.rule=Host(`unleash.cahier.homelab`)
-        - traefik.http.services.cahier-unleash.loadbalancer.server.port=4242
-
 networks:
-  internal:
-    driver: overlay
   infra_public:
     external: true
-
-configs:
-  entrypoint:
-    name: cahier_entrypoint_v1
-    file: ./entrypoint.sh
+  unleash:
+    external: true
 
 secrets:
   cahier_app_env:
     external: true
     name: cahier_app_env_v1
-  cahier_unleash_env:
-    external: true
-    name: cahier_unleash_env_v1

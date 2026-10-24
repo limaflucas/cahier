@@ -22,7 +22,7 @@ BASE_URL=http://localhost:3000 npm run test:smoke
 
 ## Ship
 
-Trunk-based: branch, PR, green CI, squash-merge. Unfinished work hides behind an Unleash flag at https://unleash.cahier.homelab. The merge deploys to https://cahier.homelab.
+Trunk-based: branch, PR, green CI, squash-merge. Unfinished work hides behind an Unleash flag at https://unleash.homelab, shared with the other homelab apps. The merge deploys to https://cahier.homelab.
 
 ## Move data from another install
 

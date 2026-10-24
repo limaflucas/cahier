@@ -22,7 +22,7 @@ jobs:
         env:
           BASE_URL: https://cahier.homelab
           EXPECTED_FLAGS: version-badge
-          UNLEASH_HEALTH_URL: https://unleash.cahier.homelab/health
+          UNLEASH_HEALTH_URL: https://unleash.homelab/health
         run: |
           for attempt in 1 2 3 4 5; do
             EXPECTED_COMMIT=$GITHUB_SHA npm run test:smoke && exit 0
