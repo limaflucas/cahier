@@ -1,0 +1,13 @@
+node_modules
+web/dist
+/data/
+*.db
+*.db-*
+.env
+.env.*
+!.env.example
+.playwright-mcp
+test-results
+playwright-report
+.commit
+.DS_Store
