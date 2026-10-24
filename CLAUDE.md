@@ -4,7 +4,7 @@ Personal French study notebook. Express 4 + node:sqlite API, React 19 + Vite SPA
 
 ## Rules
 
-- **Trunk-based:** `master` is the trunk and is protected. Work on a short-lived branch, open a PR on `gitea.homelab/homelab/cahier`, squash-merge once CI is green. Never push to `master`.
+- **Trunk-based:** `master` is the trunk and is protected. Every feature starts on its own short-lived branch, before any test or code. Open a PR on `gitea.homelab/homelab/cahier` and hand it over once CI is green: the user approves and squash-merges every PR. Never push to `master`; never approve or merge a PR.
 - **Feature flags:** unfinished or risky work merges behind an Unleash flag that defaults to off. Remove the flag once the feature is fully rolled out.
   - Server: `flags.isEnabled(name, context)`; browser: `useFlag(name)` (from `GET /api/flags`).
   - Precedence: `FLAGS_OVERRIDE` (`name=on|off,…`, an emergency kill switch) → Unleash → off.
@@ -14,7 +14,7 @@ Personal French study notebook. Express 4 + node:sqlite API, React 19 + Vite SPA
   2. Run them; they must all fail.
   3. Implement the feature.
   4. Run them again; they must all pass.
-  5. Never change an existing test without the user's consent.
+  5. Never change an existing test without the user's consent, and never ask before running it: when a test fails, report which one, why it failed and the proposed correction, then wait.
 - **Secrets:** never commit or push keys, tokens or passwords, not even in tests or docs. They live in Docker swarm secrets. The `pre-commit` hook and CI run gitleaks.
 - **Style:** code that speaks for itself; comments only when unavoidable. JSDoc on every function and class.
 
