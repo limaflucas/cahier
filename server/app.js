@@ -5,6 +5,7 @@ import { readBuildInfo } from './buildInfo.js';
 import { createFlags } from './flags.js';
 import { normalize } from './dictionary.js';
 import { UpstreamError } from './reverso.js';
+import { ListError } from './wordLists.js';
 
 const MAX_WORD_LENGTH = 100;
 const SESSION_COOKIE = 'cahier_sid';
@@ -39,6 +40,62 @@ function sessionId(req, res) {
   return id;
 }
 
+/**
+ * What Unleash knows about the visitor: sticky session, address and browser.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @returns {{ sessionId: string, remoteAddress: string, properties: { userAgent: string } }}
+ */
+function visitorContext(req, res) {
+  return { sessionId: sessionId(req, res), remoteAddress: req.ip, properties: { userAgent: req.get('user-agent') ?? '' } };
+}
+
+/**
+ * The list id in the path, or null when it is not a positive integer.
+ * @param {import('express').Request} req
+ * @returns {number | null}
+ */
+function listId(req) {
+  return /^[1-9]\d*$/.test(req.params.id) ? Number(req.params.id) : null;
+}
+
+/**
+ * The /api/lists routes, which exist only while the sac-de-mots flag is on.
+ * @param {ReturnType<typeof import('./wordLists.js').createWordLists>} wordLists
+ * @param {{ isEnabled(name: string, context: object): boolean }} flags
+ * @returns {import('express').Router}
+ */
+function listRoutes(wordLists, flags) {
+  const router = express.Router();
+  const notFound = (res) => res.status(404).json({ error: 'not_found' });
+  const fields = (req) => (req.body && typeof req.body === 'object' ? req.body : {});
+
+  router.use((req, res, next) => (flags.isEnabled('sac-de-mots', visitorContext(req, res)) ? next() : notFound(res)));
+
+  router.get('/', (_req, res) => res.json(wordLists.all()));
+
+  router.post('/', (req, res) => res.status(201).json(wordLists.create(fields(req))));
+
+  router.get('/:id', (req, res) => {
+    const list = listId(req) && wordLists.get(listId(req));
+    return list ? res.json(list) : notFound(res);
+  });
+
+  router.patch('/:id', (req, res) => {
+    const list = listId(req) && wordLists.update(listId(req), fields(req));
+    return list ? res.json(list) : notFound(res);
+  });
+
+  router.delete('/:id', (req, res) => (listId(req) && wordLists.remove(listId(req)) ? res.status(204).end() : notFound(res)));
+
+  router.use((err, _req, res, next) => {
+    if (!(err instanceof ListError)) return next(err);
+    res.status(err.code === 'name_taken' ? 409 : 400).json({ error: err.code });
+  });
+
+  return router;
+}
+
 function wordParam(req, res) {
   const word = normalize(req.params.word);
   if (word && word.length <= MAX_WORD_LENGTH) return word;
@@ -51,11 +108,11 @@ function wordParam(req, res) {
  * @param {object} deps services backing the API routes
  * @param {string} [deps.staticDir] absolute path to the built SPA (web/dist)
  * @param {{ name: string, version: string, commit: string }} [deps.build] what /api/version reports
- * @param {{ snapshot(context: object): Record<string, boolean> }} [deps.flags] feature flags
+ * @param {{ isEnabled(name: string, context: object): boolean, snapshot(context: object): Record<string, boolean> }} [deps.flags] feature flags
  * @returns {import('express').Express}
  */
 export function createApp({
-  db, dictionary, myWords, conjugator, verbPicker, memoir, pronunciation,
+  db, dictionary, myWords, wordLists, conjugator, verbPicker, memoir, pronunciation,
   staticDir, build = readBuildInfo(), flags = createFlags(), logger = console,
 }) {
   const app = express();
@@ -65,8 +122,7 @@ export function createApp({
   app.get('/api/version', (_req, res) => res.json(build));
 
   app.get('/api/flags', (req, res) => {
-    const context = { sessionId: sessionId(req, res), remoteAddress: req.ip, properties: { userAgent: req.get('user-agent') ?? '' } };
-    res.set('Cache-Control', 'no-store').json(flags.snapshot(context));
+    res.set('Cache-Control', 'no-store').json(flags.snapshot(visitorContext(req, res)));
   });
 
   app.get('/api/health', (_req, res) => {
@@ -142,6 +198,8 @@ export function createApp({
     if (!question) return res.status(404).json({ error: 'not_enough_words' });
     res.json(question);
   }));
+
+  if (wordLists) app.use('/api/lists', listRoutes(wordLists, flags));
 
   app.use('/api', (_req, res) => res.status(404).json({ error: 'not_found' }));
 

@@ -1,10 +1,20 @@
 import { useId, useState } from 'react';
 import { useMatch, useNavigate } from 'react-router-dom';
+import { useFlag } from '../flags.jsx';
 import { readRecentSearches, rememberSearch } from '../searchHistory.js';
+
+const PURPOSES = {
+  myWords: { placeholder: 'Filtrer mes mots…', label: 'Filtrer mes mots ou chercher un mot' },
+  lists: { placeholder: 'Filtrer mes sacs…', label: 'Filtrer mes sacs ou chercher un mot' },
+  lookup: { placeholder: 'Chercher un mot…', label: 'Chercher un mot' },
+};
 
 export default function SearchBar({ query, onQueryChange }) {
   const navigate = useNavigate();
+  const sacDeMots = useFlag('sac-de-mots');
   const filtersMyWords = useMatch('/mes-mots') !== null;
+  const filtersLists = useMatch('/sac-de-mots') !== null && sacDeMots;
+  const purpose = PURPOSES[filtersMyWords ? 'myWords' : filtersLists ? 'lists' : 'lookup'];
   const listId = useId();
   const [recentSearches, setRecentSearches] = useState(null);
   const [active, setActive] = useState(0);
@@ -61,8 +71,8 @@ export default function SearchBar({ query, onQueryChange }) {
         aria-expanded={isOpen}
         aria-controls={isOpen ? listId : undefined}
         aria-activedescendant={isOpen ? `${listId}-${active}` : undefined}
-        placeholder={filtersMyWords ? 'Filtrer mes mots…' : 'Chercher un mot…'}
-        aria-label={filtersMyWords ? 'Filtrer mes mots ou chercher un mot' : 'Chercher un mot'}
+        placeholder={purpose.placeholder}
+        aria-label={purpose.label}
         lang="fr"
         autoCapitalize="off"
         autoCorrect="off"

@@ -14,6 +14,7 @@ import { createPrepositionFinder } from './prepositions.js';
 import { createPronunciation, fetchAudioFiles } from './pronunciation.js';
 import { fetchDefinition } from './reverso.js';
 import { createVerbPicker } from './verbPicker.js';
+import { createWordLists } from './wordLists.js';
 
 const port = Number(process.env.PORT ?? 3000);
 const spaDir = fileURLToPath(new URL('../web/dist', import.meta.url));
@@ -34,6 +35,7 @@ const app = createApp({
   db,
   dictionary,
   myWords,
+  wordLists: createWordLists(db),
   conjugator,
   verbPicker: createVerbPicker({ myWords, dictionary, conjugator }),
   memoir: createMemoir({ myWords, dictionary, conjugator }),

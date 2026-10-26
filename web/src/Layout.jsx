@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import SearchBar from './components/SearchBar.jsx';
 import VersionBadge from './components/VersionBadge.jsx';
+import { useFlags } from './flags.jsx';
 
 const MENU = [
   { to: '/mes-mots', label: 'Mes mots' },
+  { to: '/sac-de-mots', label: 'Sac de mots', flag: 'sac-de-mots' },
   { to: '/temps-verbaux', label: 'Temps verbaux' },
   { to: '/conjugaison', label: 'Conjugaison' },
   { to: '/memoir', label: 'Memoir' },
@@ -14,10 +16,11 @@ const ACTIVE = 'border-blue-600 font-semibold text-blue-700';
 const INACTIVE = 'border-transparent font-medium text-stone-500 hover:text-stone-900';
 
 function NavMenu({ vertical = false }) {
+  const flags = useFlags();
   const shape = vertical ? 'border-l-4 px-4 py-2.5 text-lg' : 'border-b-2 px-1 py-2 text-sm sm:px-2';
   return (
     <ul className={vertical ? 'space-y-1' : 'flex justify-between gap-x-1 sm:justify-start sm:gap-x-2'}>
-      {MENU.map(({ to, label }) => (
+      {MENU.filter(({ flag }) => !flag || flags[flag] === true).map(({ to, label }) => (
         <li key={to}>
           <NavLink
             to={to}

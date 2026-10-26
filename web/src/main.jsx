@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './Layout.jsx';
-import { FlagsProvider } from './flags.jsx';
+import { Flagged, FlagsProvider } from './flags.jsx';
 import Home from './pages/Home.jsx';
 import WordPage from './pages/WordPage.jsx';
 import MyWords from './pages/MyWords.jsx';
@@ -10,6 +10,8 @@ import TempsVerbaux from './pages/TempsVerbaux.jsx';
 import ConjugationSetup from './pages/ConjugationSetup.jsx';
 import ConjugationGame from './pages/ConjugationGame.jsx';
 import Memoir from './pages/Memoir.jsx';
+import WordLists from './pages/WordLists.jsx';
+import WordList from './pages/WordList.jsx';
 import './index.css';
 
 createRoot(document.getElementById('root')).render(
@@ -21,6 +23,8 @@ createRoot(document.getElementById('root')).render(
             <Route index element={<Home />} />
             <Route path="mot/:word" element={<WordPage />} />
             <Route path="mes-mots" element={<MyWords />} />
+            <Route path="sac-de-mots" element={<Flagged name="sac-de-mots"><WordLists /></Flagged>} />
+            <Route path="sac-de-mots/:id" element={<Flagged name="sac-de-mots"><WordList /></Flagged>} />
             <Route path="conjugaison" element={<ConjugationSetup />} />
             <Route path="memoir" element={<Memoir />} />
           </Route>

@@ -22,6 +22,13 @@ const SCHEMA = `
     word TEXT PRIMARY KEY,
     added_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  CREATE TABLE IF NOT EXISTS word_lists (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    name_key TEXT NOT NULL UNIQUE,
+    emoji TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `;
 
 export function openDb(path = process.env.DB_PATH ?? 'data/french.db') {

@@ -1,3 +1,5 @@
+const REMAPPED_TABLES = new Set(['word_lists']);
+
 /**
  * Copies into `target` every row of `source` that it lacks, for each table and column both share.
  * Rows already in `target` win, so running it again imports nothing.
@@ -42,11 +44,11 @@ function copyTable(source, target, table) {
 
 /**
  * @param {import('node:sqlite').DatabaseSync} db
- * @returns {string[]} user tables, sorted by name
+ * @returns {string[]} user tables whose rows copy as they are, sorted by name
  */
 function tables(db) {
   return db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
-    .all().map(({ name }) => name);
+    .all().map(({ name }) => name).filter((name) => !REMAPPED_TABLES.has(name));
 }
 
 /**

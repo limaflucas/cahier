@@ -39,6 +39,6 @@ jobs:
       - run: npm ci && npm run build
       - name: smoke against the production build
         run: |
-          PORT=3100 DB_PATH=/tmp/smoke.db ANTHROPIC_API_KEY= npm start > /tmp/server.log 2>&1 &
+          PORT=3100 DB_PATH=/tmp/smoke.db ANTHROPIC_API_KEY= FLAGS_OVERRIDE=sac-de-mots=on npm start > /tmp/server.log 2>&1 &
           for i in $(seq 30); do curl -fs http://localhost:3100/api/health > /dev/null && break; sleep 1; done
           BASE_URL=http://localhost:3100 npm run test:smoke || { cat /tmp/server.log; exit 1; }

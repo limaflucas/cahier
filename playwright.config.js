@@ -13,7 +13,7 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: devices['Desktop Chrome'] }],
   webServer: [
     { port, env: { PORT: String(port), DB_PATH: dbPath('off') } },
-    { port: port + 1, env: { PORT: String(port + 1), DB_PATH: dbPath('on'), FLAGS_OVERRIDE: 'version-badge=on', GIT_COMMIT: 'abcdef1234567' } },
+    { port: port + 1, env: { PORT: String(port + 1), DB_PATH: dbPath('on'), FLAGS_OVERRIDE: 'version-badge=on,sac-de-mots=on', GIT_COMMIT: 'abcdef1234567' } },
   ].map(({ port, env }) => ({
     command: 'node server/index.js',
     port,

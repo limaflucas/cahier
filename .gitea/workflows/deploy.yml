@@ -21,7 +21,7 @@ jobs:
       - name: smoke against https://cahier.homelab
         env:
           BASE_URL: https://cahier.homelab
-          EXPECTED_FLAGS: version-badge
+          EXPECTED_FLAGS: version-badge,sac-de-mots
           UNLEASH_HEALTH_URL: https://unleash.homelab/health
         run: |
           for attempt in 1 2 3 4 5; do
