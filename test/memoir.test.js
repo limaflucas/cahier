@@ -60,7 +60,7 @@ test('FR → PT phrase highlights the word and asks for its Portuguese translati
   const question = ask('fr-pt', PHRASE_FIRST);
   assert.deepEqual(question.clue, { kind: 'phrase', text: 'Il **mène** sa fille à l’école.' });
   assert.equal(question.options[question.answer], 'levar');
-  assert.deepEqual(optionSet(question), ['apoiar', 'deter', 'evocar', 'levar', 'resultar']);
+  assert.deepEqual(optionSet(question), ['apoiar', 'deter', 'evocar', 'levar']);
   assert.deepEqual(question.reveal, {
     pos: 'Verb',
     gender: null,
@@ -82,7 +82,7 @@ test('PT → FR phrase blanks the marked Portuguese word and asks for the French
   const question = ask('pt-fr', PHRASE_FIRST);
   assert.deepEqual(question.clue, { kind: 'phrase', text: 'Ele **leva** a filha à escola.' });
   assert.equal(question.options[question.answer], 'mener');
-  assert.deepEqual(optionSet(question), ['aboutir', 'détenir', 'évoquer', 'mener', 'soutenir']);
+  assert.deepEqual(optionSet(question), ['détenir', 'évoquer', 'mener', 'soutenir']);
 });
 
 test('the gloss clue is the French definition or the Portuguese translations', () => {
@@ -94,7 +94,7 @@ test('wrong options prefer the same part of speech and never include another rig
   for (const random of [PHRASE_FIRST, GLOSS_FIRST, Math.random]) {
     for (const direction of ['fr-pt', 'pt-fr']) {
       const options = ask(direction, random).options;
-      assert.equal(new Set(options).size, 5);
+      assert.equal(new Set(options).size, 4);
       for (const excluded of ['taille', 'cintura', 'conduire', 'Levar', 'guiar', 'dirigir']) {
         assert.ok(!options.includes(excluded), `${direction} offered ${excluded}`);
       }
@@ -102,8 +102,8 @@ test('wrong options prefer the same part of speech and never include another rig
   }
 });
 
-test('buildQuestion gives up when fewer than four wrong options remain', () => {
-  const pool = ['mener', 'conduire', 'aboutir', 'évoquer', 'soutenir'].map(card);
+test('buildQuestion gives up when fewer than three wrong options remain', () => {
+  const pool = ['mener', 'conduire', 'aboutir', 'évoquer'].map(card);
   assert.equal(ask('pt-fr', PHRASE_FIRST, { pool }), null);
   assert.equal(ask('fr-pt', PHRASE_FIRST, { pool }), null);
 });
@@ -142,11 +142,28 @@ test('question skips excluded words unless nothing else is left', async () => {
   assert.ok(ALL.includes((await memoir.question({ exclude: ALL })).word));
 });
 
-test('question returns null with fewer than five usable words, skipping failed lookups', async () => {
+test('question returns null with fewer than four usable words, skipping failed lookups', async () => {
   const errors = [];
-  const memoir = memoirWith(['mener', 'aboutir', 'évoquer', 'soutenir', 'jadis', 'cassé'], {
+  const memoir = memoirWith(['mener', 'aboutir', 'évoquer', 'jadis', 'cassé'], {
     logger: { error: (...args) => errors.push(args.join(' ')) },
   });
   assert.equal(await memoir.question(), null);
   assert.deepEqual(errors, ['definitions for "cassé" failed: down']);
+});
+
+test('a question offers four distinct options, one of them right', () => {
+  for (const random of [PHRASE_FIRST, GLOSS_FIRST, Math.random]) {
+    for (const direction of ['fr-pt', 'pt-fr']) {
+      const question = ask(direction, random);
+      assert.equal(question.options.length, 4, `${direction} options`);
+      assert.equal(new Set(question.options).size, 4, `${direction} distinct options`);
+      assert.equal(question.options[question.answer], direction === 'fr-pt' ? 'levar' : 'mener');
+    }
+  }
+});
+
+test('four usable words are enough for a question', async () => {
+  const question = await memoirWith(['mener', 'aboutir', 'évoquer', 'soutenir']).question();
+  assert.ok(question, 'no question for four usable words');
+  assert.equal(question.options.length, 4);
 });

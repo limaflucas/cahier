@@ -17,6 +17,10 @@ function optionStyle(index, choice, answer) {
   return 'border-stone-200 bg-white text-stone-400';
 }
 
+/**
+ * One Memoir question: the clue, its options stacked one per row, then the answer once chosen.
+ * @param {{ question: object, review: boolean, onAnswer: (correct: boolean) => void, onNext: () => void }} props
+ */
 export default function Question({ question, review, onAnswer, onNext }) {
   const { direction, clue, options, answer } = question;
   const [choice, setChoice] = useState(null);
@@ -53,7 +57,7 @@ export default function Question({ question, review, onAnswer, onNext }) {
         {clue.kind === 'phrase' ? <Phrase text={clue.text} blank={direction === 'pt-fr' && !answered} /> : `« ${clue.text} »`}
       </p>
 
-      <ol className="mt-6 grid gap-2 sm:grid-cols-2">
+      <ol className="mt-6 grid gap-2">
         {options.map((option, i) => (
           <li key={option}>
             <button

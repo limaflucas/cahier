@@ -5,7 +5,7 @@ import { headwordOf } from './reverso.js';
 
 const EXCLUDED_LEVELS = new Set(['Rare', 'C2']);
 const ADVANCED_BONUS = 1;
-const OPTION_COUNT = 5;
+const OPTION_COUNT = 4;
 const MAX_CLUE_TRANSLATIONS = 3;
 const DIRECTIONS = ['fr-pt', 'pt-fr'];
 const CLUE_LANGUAGE = { 'fr-pt': 'fr', 'pt-fr': 'pt' };

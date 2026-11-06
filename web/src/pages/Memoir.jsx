@@ -5,11 +5,15 @@ import { useApi } from '../useApi.js';
 import { isReview, newSession, nextRequest, recordAnswer } from '../memoir/session.js';
 import Question from '../components/memoir/Question.jsx';
 
+/**
+ * Why no question could be shown, with a way forward.
+ * @param {{ error: { status?: number }, onRetry: () => void }} props
+ */
 function Failure({ error, onRetry }) {
   if (error.status === 404) {
     return (
       <p className="mt-8 text-stone-600">
-        Memoir a besoin d'au moins 5 mots enregistrés.{' '}
+        Memoir a besoin d'au moins 4 mots enregistrés.{' '}
         <Link to="/mes-mots" className="font-medium text-blue-700 hover:underline">Voir mes mots</Link>
       </p>
     );
