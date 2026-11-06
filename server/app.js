@@ -135,9 +135,18 @@ export function createApp({
   app.get('/api/dictionary/:word', asyncRoute(async (req, res) => {
     const word = wordParam(req, res);
     if (!word) return;
-    const entry = await dictionary.lookup(word);
+    const entry = await dictionary.lookup(word, { awaitPrepositions: false });
     if (!entry) return res.status(404).json({ error: 'not_found' });
     res.json(entry);
+  }));
+
+  app.get('/api/prepositions/:word', asyncRoute(async (req, res) => {
+    const verb = wordParam(req, res);
+    if (!verb) return;
+    const constructions = await dictionary.prepositions(verb);
+    if (constructions === undefined) return res.status(404).json({ error: 'not_found' });
+    if (constructions === null) return res.status(503).json({ error: 'prepositions_unavailable' });
+    res.json(constructions);
   }));
 
   app.get('/api/audio/:word', asyncRoute(async (req, res) => {

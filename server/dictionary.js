@@ -121,6 +121,32 @@ export function createDictionary({
     }
   }
 
+  const PENDING = 'pending';
+  const searches = new Map();
+
+  /**
+   * Searches for the verb's prepositions in the background, once however often it is asked.
+   * @param {string} verb
+   * @returns {Promise<object[] | null>}
+   */
+  function searchPrepositions(verb) {
+    if (!searches.has(verb)) searches.set(verb, prepositionsFor(verb).finally(() => searches.delete(verb)));
+    return searches.get(verb);
+  }
+
+  /**
+   * The verb's prepositions when known, else 'pending' while a background search finds them.
+   * @param {string} verb
+   * @returns {object[] | null | 'pending'}
+   */
+  function prepositionsSoFar(verb) {
+    const cached = getPreps.get(verb);
+    if (cached) return JSON.parse(cached.json);
+    if (!findPrepositions) return null;
+    searchPrepositions(verb);
+    return PENDING;
+  }
+
   async function definitions(word) {
     const query = normalize(word);
     return query ? entryFor(query) : null;
@@ -142,18 +168,36 @@ export function createDictionary({
 
     summary: async (word) => summarizeWord(await definitions(word), normalize(word)),
 
-    async lookup(word) {
+    /**
+     * The word's entry, each headword flagged when saved and, for verbs, given its prepositions.
+     * @param {string} word
+     * @param {{ awaitPrepositions?: boolean }} [options] false: verbs whose prepositions are still unknown
+     *   get 'pending' at once, and `prepositions(verb)` delivers them when found
+     * @returns {Promise<object | null>}
+     */
+    async lookup(word, { awaitPrepositions = true } = {}) {
       const entry = await definitions(word);
       if (!entry) return null;
 
+      const prepositionsOf = awaitPrepositions ? prepositionsFor : prepositionsSoFar;
       const words = await Promise.all(
         entry.words.map(async (w) => ({
           ...w,
           saved: Boolean(isSaved.get(w.word)),
-          prepositions: isVerb(w) ? await prepositionsFor(w.word) : undefined,
+          prepositions: isVerb(w) ? await prepositionsOf(w.word) : undefined,
         })),
       );
       return { ...entry, words };
+    },
+
+    /**
+     * The verb's prepositions, waiting for a search a lookup started; never starts one.
+     * @param {string} verb
+     * @returns {Promise<object[] | null | undefined>} null when unavailable, undefined when no lookup asked
+     */
+    async prepositions(verb) {
+      const cached = getPreps.get(verb);
+      return cached ? JSON.parse(cached.json) : searches.get(verb);
     },
   };
 }

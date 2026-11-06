@@ -31,7 +31,7 @@ function Word({ entry }) {
           <SaveButton word={entry.word} initiallySaved={entry.saved} />
         </div>
       </header>
-      {entry.prepositions !== undefined && <Prepositions constructions={entry.prepositions} />}
+      {entry.prepositions !== undefined && <Prepositions verb={entry.word} constructions={entry.prepositions} />}
       {entry.sections.map((section, i) => <PosSection key={i} section={section} />)}
     </article>
   );

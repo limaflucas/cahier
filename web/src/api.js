@@ -38,6 +38,7 @@ function memoirQuery({ word, sense, exclude = [] }) {
 
 export const api = {
   lookup: (word, signal) => request(`/dictionary/${enc(word)}`, { signal }),
+  prepositions: (verb, signal) => request(`/prepositions/${enc(verb)}`, { signal }),
   myWords: (signal) => request('/my-words', { signal }),
   save: (word) => request(`/my-words/${enc(word)}`, { method: 'PUT' }),
   unsave: (word) => request(`/my-words/${enc(word)}`, { method: 'DELETE' }),
