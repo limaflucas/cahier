@@ -27,6 +27,7 @@ if (!findPrepositions) console.warn('ANTHROPIC_API_KEY not set: verb preposition
 
 const dictionary = createDictionary({ db, fetchDefinition, findPrepositions });
 const myWords = createMyWords(db);
+dictionary.preload(myWords.list().map(({ word }) => word));
 const unleash = createUnleashClient();
 if (!unleash) console.warn('UNLEASH_URL or UNLEASH_API_TOKEN not set: flags come from FLAGS_OVERRIDE only');
 const conjugator = createConjugator(loadLefff());

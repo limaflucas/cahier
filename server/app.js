@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
+import compression from 'compression';
 import express from 'express';
 import { readBuildInfo } from './buildInfo.js';
 import { createFlags } from './flags.js';
@@ -117,6 +118,7 @@ export function createApp({
 }) {
   const app = express();
   app.set('trust proxy', 'loopback, uniquelocal');
+  app.use(compression());
   app.use(express.json());
 
   app.get('/api/version', (_req, res) => res.json(build));
