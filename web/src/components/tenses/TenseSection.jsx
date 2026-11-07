@@ -1,9 +1,14 @@
 import { Link } from 'react-router-dom';
+import { GAME_TENSES } from '../../tenses/index.js';
 import Marked from '../Marked.jsx';
 import Formation from './Formation.jsx';
 import ModelConjugations from './ModelConjugations.jsx';
 import Point from './Point.jsx';
 
+/**
+ * A titled list of usage points, or nothing when there are none.
+ * @param {{ title: string, points: object[] }} props
+ */
 function Points({ title, points }) {
   if (points.length === 0) return null;
   return (
@@ -16,6 +21,10 @@ function Points({ title, points }) {
   );
 }
 
+/**
+ * One tense on the reference page: formation, model verbs, uses, pitfalls and tips.
+ * @param {{ tense: object, models: { status: string, data?: object } }} props
+ */
 export default function TenseSection({ tense, models }) {
   return (
     <section id={tense.id} aria-labelledby={`${tense.id}-title`} className="scroll-mt-6 border-t border-stone-200 pt-10">
@@ -24,12 +33,12 @@ export default function TenseSection({ tense, models }) {
       <p lang="pt" className="text-blue-800">{tense.summary.pt}</p>
 
       <div className="mt-6 space-y-4">
-        <section className="rounded-xl border border-stone-200 bg-white p-4">
-          <h3 className="mb-3 text-sm font-semibold text-stone-900">Formation</h3>
+        <section aria-labelledby={`${tense.id}-formation`} className="rounded-xl border border-stone-200 bg-white p-4">
+          <h3 id={`${tense.id}-formation`} className="mb-3 text-sm font-semibold text-stone-900">Formation</h3>
           <Formation formation={tense.formation} />
         </section>
-        <section className="rounded-xl border border-stone-200 bg-white p-4">
-          <h3 className="mb-3 text-sm font-semibold text-stone-900">Modèles</h3>
+        <section aria-labelledby={`${tense.id}-models`} className="rounded-xl border border-stone-200 bg-white p-4">
+          <h3 id={`${tense.id}-models`} className="mb-3 text-sm font-semibold text-stone-900">Modèles</h3>
           {models.status === 'done' && <ModelConjugations tense={tense} boards={models.data} />}
           {models.status === 'loading' && <p className="text-sm text-stone-500">Chargement des modèles…</p>}
           {models.status === 'error' && <p className="text-sm text-stone-500">Modèles indisponibles pour le moment.</p>}
@@ -47,11 +56,13 @@ export default function TenseSection({ tense, models }) {
         </ul>
       </aside>
 
-      <p className="mt-6">
-        <Link to="/conjugaison" className="text-sm font-medium text-blue-700 hover:text-blue-900">
-          S'entraîner sur un verbe
-        </Link>
-      </p>
+      {GAME_TENSES.includes(tense.id) && (
+        <p className="mt-6">
+          <Link to="/conjugaison" className="text-sm font-medium text-blue-700 hover:text-blue-900">
+            S'entraîner sur un verbe
+          </Link>
+        </p>
+      )}
     </section>
   );
 }

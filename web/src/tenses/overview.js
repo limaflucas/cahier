@@ -1,6 +1,6 @@
 export const TIMELINE = [
   { tenses: ['plusQueParfait'], moment: 'avant un moment passé' },
-  { tenses: ['passeCompose', 'imparfait'], moment: 'passé' },
+  { tenses: ['passeCompose', 'passeSimple', 'imparfait'], moment: 'passé' },
   { tenses: ['present'], moment: 'maintenant', now: true },
   { tenses: ['futurAnterieur'], moment: 'avant un moment futur' },
   { tenses: ['futur'], moment: 'futur' },

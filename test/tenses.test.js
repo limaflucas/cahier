@@ -6,7 +6,7 @@ import { TENSES, TENSES_BY_ID } from '../web/src/tenses/index.js';
 
 const board = createConjugator(loadLefff()).board('plier');
 
-test('the reference page and the game cover exactly the same tenses', () => {
+test('the reference page and the conjugator cover exactly the same tenses', () => {
   assert.deepEqual(TENSES.map((tense) => tense.id).sort(), Object.keys(board.tenses).sort());
 });
 

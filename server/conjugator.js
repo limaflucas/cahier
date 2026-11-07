@@ -2,7 +2,7 @@ import { normalize } from './dictionary.js';
 import { spellings, startsWithVowelSound } from './frenchSpelling.js';
 import { conjugationHints } from './conjugationHints.js';
 
-const SIMPLE_TENSES = { present: 'P', imparfait: 'I', futur: 'F', conditionnel: 'C', subjonctif: 'S' };
+const SIMPLE_TENSES = { present: 'P', imparfait: 'I', passeSimple: 'J', futur: 'F', conditionnel: 'C', subjonctif: 'S' };
 const COMPOUND_TENSES = {
   passeCompose: 'present',
   plusQueParfait: 'imparfait',

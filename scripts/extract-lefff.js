@@ -6,7 +6,7 @@ if (!source) {
   process.exit(1);
 }
 
-const KEPT_TENSES = ['P', 'I', 'F', 'C', 'S', 'G', 'K'];
+const KEPT_TENSES = ['P', 'I', 'F', 'C', 'S', 'J', 'G', 'K'];
 
 const participle = (ms, mp, fs, fp) => ({ K: [ms, mp, fs, fp] });
 const invariableParticiple = (form) => participle(form, form, form, form);

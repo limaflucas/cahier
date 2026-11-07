@@ -2,6 +2,7 @@ import present from './present.js';
 import passeCompose from './passeCompose.js';
 import imparfait from './imparfait.js';
 import plusQueParfait from './plusQueParfait.js';
+import passeSimple from './passeSimple.js';
 import futur from './futur.js';
 import futurAnterieur from './futurAnterieur.js';
 import conditionnel from './conditionnel.js';
@@ -17,6 +18,7 @@ export const TENSES = [
   passeCompose,
   imparfait,
   plusQueParfait,
+  passeSimple,
   futur,
   futurAnterieur,
   conditionnel,
@@ -39,6 +41,8 @@ export const TWIN_TENSES = [
   ['conditionnel', 'conditionnelPasse'],
   ['subjonctif', 'subjonctifPasse'],
 ];
+
+export const GAME_TENSES = [...TWIN_TENSES.flat(), ...NON_FINITE_TENSES];
 
 export function groupByMood(items, moodOf) {
   const groups = [];

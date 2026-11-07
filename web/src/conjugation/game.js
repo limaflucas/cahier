@@ -1,3 +1,4 @@
+import { GAME_TENSES } from '../tenses/index.js';
 import { grade } from './grade.js';
 
 export const LEVELS = [
@@ -21,10 +22,16 @@ function shuffled(items, random) {
   return copy;
 }
 
+/**
+ * A fresh game on the tenses the game shows, with the level's share of cells already filled in.
+ * @param {{ tenses: Record<string, { cells: (object | null)[] }> }} board
+ * @param {{ prefilled: number }} level
+ * @param {() => number} [random]
+ */
 export function newGame(board, level, random = Math.random) {
-  const playable = Object.entries(board.tenses).flatMap(([tense, { cells }]) =>
-    cells.flatMap((cell, index) => (cell ? [[cellKey(tense, index), cell]] : [])),
-  );
+  const playable = Object.entries(board.tenses)
+    .filter(([tense]) => GAME_TENSES.includes(tense))
+    .flatMap(([tense, { cells }]) => cells.flatMap((cell, index) => (cell ? [[cellKey(tense, index), cell]] : [])));
   const given = new Set(
     shuffled(playable.map(([key]) => key), random).slice(0, Math.round(playable.length * level.prefilled)),
   );

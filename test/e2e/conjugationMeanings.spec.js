@@ -32,6 +32,7 @@ test('an icon between the verb and its sound icon shows its meanings on hover', 
 
 test('the meanings match the search page', async ({ page }) => {
   await page.goto('/mot/penser');
+  await expect(page.locator('article section').first()).toBeVisible();
   const searchPage = await page.locator('article section').allInnerTexts();
   expect(searchPage.length).toBeGreaterThan(0);
 
