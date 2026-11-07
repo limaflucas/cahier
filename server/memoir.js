@@ -13,6 +13,13 @@ const CLUE_LANGUAGE = { 'fr-pt': 'fr', 'pt-fr': 'pt' };
 const fold = (text) => text.toLowerCase();
 const hasSingleMark = (text) => text?.split('**').length === 3;
 
+/**
+ * Whether a question in this direction offers saved French words rather than translations.
+ * @param {'fr-pt'|'pt-fr'|'fr-fr'} direction
+ * @returns {boolean}
+ */
+const answersInFrench = (direction) => direction.endsWith('-fr');
+
 export function toCard(entry, word) {
   const all = (headwordOf(entry, word)?.sections ?? [])
     .flatMap(({ pos, gender, senses }) => senses.map((sense) => ({ ...sense, pos, gender })))
@@ -40,7 +47,7 @@ function chooseClue(direction, sense, examples, random) {
 function wrongOptions(direction, card, sense, cards, random) {
   const candidates = shuffle(cards.filter((other) => other.word !== card.word), random).flatMap((other) => {
     const samePos = other.senses.filter((s) => s.pos === sense.pos);
-    if (direction === 'pt-fr') {
+    if (answersInFrench(direction)) {
       const clashes = sense.translations.some((translation) => other.translations.has(fold(translation)));
       return clashes ? [] : [{ value: other.word, samePos: samePos.length > 0 }];
     }
@@ -54,19 +61,26 @@ function wrongOptions(direction, card, sense, cards, random) {
     .slice(0, OPTION_COUNT - 1);
 }
 
+/**
+ * One multiple-choice question about a sense of a saved word. A French definition is answered
+ * with the French word itself, so the question becomes 'fr-fr' whatever direction was asked for.
+ * @returns {object|null} the question, or null when no clue or too few wrong options exist
+ */
 export function buildQuestion({ card, sense, cards, direction, forms, random }) {
   const examples = sense.examples.map(({ fr, pt }) => ({ fr: markWord(fr, forms) ?? fr, pt }));
   const clue = chooseClue(direction, sense, examples, random);
-  const wrong = wrongOptions(direction, card, sense, cards, random);
-  if (!clue || wrong.length < OPTION_COUNT - 1) return null;
+  if (!clue) return null;
+  const questionDirection = clue.kind === 'definition' ? 'fr-fr' : direction;
+  const wrong = wrongOptions(questionDirection, card, sense, cards, random);
+  if (wrong.length < OPTION_COUNT - 1) return null;
 
-  const correct = direction === 'fr-pt' ? sense.translations[0] : card.word;
+  const correct = answersInFrench(questionDirection) ? card.word : sense.translations[0];
   const options = shuffle([correct, ...wrong], random);
   const { pos, gender, level, definition, translations } = sense;
   return {
     word: card.word,
     sense: sense.id,
-    direction,
+    direction: questionDirection,
     clue: { kind: clue.kind, text: clue.text },
     options,
     answer: options.indexOf(correct),

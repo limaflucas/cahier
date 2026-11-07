@@ -15,3 +15,16 @@ test('a Memoir question offers four distinct options, or says there are too few 
   assert.equal(new Set(options).size, 4);
   assert.ok(Number.isInteger(answer) && answer >= 0 && answer < options.length, `answer ${answer}`);
 });
+
+test('a definition question is answered with the French word itself', async (t) => {
+  for (let attempt = 0; attempt < 30; attempt++) {
+    const res = await fetch(`${base}/api/memoir/question`);
+    if (res.status === 404) return t.skip('too few saved words');
+    const { word, direction, clue, options, answer } = await res.json();
+    if (clue.kind !== 'definition') continue;
+    assert.equal(direction, 'fr-fr');
+    assert.equal(options[answer], word);
+    return;
+  }
+  t.skip('no definition question in 30 tries');
+});

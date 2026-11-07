@@ -71,10 +71,11 @@ test('FR → PT phrase highlights the word and asks for its Portuguese translati
   });
 });
 
-test('FR → PT falls back to the definition when the word cannot be found in any example', () => {
+test('FR → PT falls back to a definition, answered in French, when the word cannot be found in any example', () => {
   const question = ask('fr-pt', PHRASE_FIRST, { senseId: 2 });
   assert.deepEqual(question.clue, { kind: 'definition', text: 'être à la tête de' });
-  assert.equal(question.options[question.answer], 'dirigir');
+  assert.equal(question.direction, 'fr-fr');
+  assert.equal(question.options[question.answer], 'mener');
   assert.deepEqual(question.reveal.example, { fr: 'Elle dirige tout.', pt: 'Ela **dirige** tudo.' });
 });
 
@@ -88,6 +89,14 @@ test('PT → FR phrase blanks the marked Portuguese word and asks for the French
 test('the gloss clue is the French definition or the Portuguese translations', () => {
   assert.deepEqual(ask('fr-pt', GLOSS_FIRST).clue, { kind: 'definition', text: "conduire quelqu'un d'un endroit à un autre" });
   assert.deepEqual(ask('pt-fr', GLOSS_FIRST).clue, { kind: 'translation', text: 'levar, conduzir' });
+});
+
+test('a definition clue asks for the French word itself, among other saved French words', () => {
+  const question = ask('fr-pt', GLOSS_FIRST);
+  assert.equal(question.direction, 'fr-fr');
+  assert.deepEqual(question.clue, { kind: 'definition', text: "conduire quelqu'un d'un endroit à un autre" });
+  assert.equal(question.options[question.answer], 'mener');
+  assert.deepEqual(optionSet(question), ['aboutir', 'évoquer', 'mener', 'soutenir']);
 });
 
 test('wrong options prefer the same part of speech and never include another right answer', () => {
@@ -157,7 +166,7 @@ test('a question offers four distinct options, one of them right', () => {
       const question = ask(direction, random);
       assert.equal(question.options.length, 4, `${direction} options`);
       assert.equal(new Set(question.options).size, 4, `${direction} distinct options`);
-      assert.equal(question.options[question.answer], direction === 'fr-pt' ? 'levar' : 'mener');
+      assert.equal(question.options[question.answer], question.direction === 'fr-pt' ? 'levar' : 'mener');
     }
   }
 });

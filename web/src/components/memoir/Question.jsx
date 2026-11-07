@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import Phrase from './Phrase.jsx';
 import Reveal from './Reveal.jsx';
 
-const DIRECTION_LABELS = { 'fr-pt': 'FR → PT', 'pt-fr': 'PT → FR' };
-const CLUE_LANGUAGE = { 'fr-pt': 'fr', 'pt-fr': 'pt' };
-const OPTION_LANGUAGE = { 'fr-pt': 'pt', 'pt-fr': 'fr' };
+const DIRECTION_LABELS = { 'fr-pt': 'FR → PT', 'pt-fr': 'PT → FR', 'fr-fr': 'FR → FR' };
+const CLUE_LANGUAGE = { 'fr-pt': 'fr', 'pt-fr': 'pt', 'fr-fr': 'fr' };
+const OPTION_LANGUAGE = { 'fr-pt': 'pt', 'pt-fr': 'fr', 'fr-fr': 'fr' };
 const PROMPTS = {
-  'fr-pt': { phrase: 'Traduisez le mot surligné', definition: 'Quel mot portugais correspond à cette définition ?' },
+  'fr-pt': { phrase: 'Traduisez le mot surligné' },
   'pt-fr': { phrase: 'Quel mot français complète la phrase ?', translation: 'Quel mot français se traduit ainsi ?' },
+  'fr-fr': { definition: 'Quel mot français correspond à cette définition ?' },
 };
 
 function optionStyle(index, choice, answer) {

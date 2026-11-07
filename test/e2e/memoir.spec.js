@@ -34,6 +34,29 @@ test('the four options are stacked one above the other, full width', async ({ pa
   });
 });
 
+test('a definition is answered with French words', async ({ page }) => {
+  const question = {
+    word: 'postérité',
+    sense: 0,
+    direction: 'fr-fr',
+    clue: { kind: 'definition', text: 'générations futures, descendants' },
+    options: ['aboutir', 'postérité', 'évoquer', 'soutenir'],
+    answer: 1,
+    reveal: { ...QUESTION.reveal, pos: 'Noun', gender: 'f', definition: 'générations futures, descendants', translations: ['posteridade'] },
+  };
+  await page.route(QUESTION_ROUTE, (route) => route.fulfill({ json: question }));
+  await page.goto('/memoir');
+
+  await expect(page.getByText('FR → FR')).toBeVisible();
+  await expect(page.getByText('Quel mot français correspond à cette définition ?')).toBeVisible();
+  await expect(page.getByText('« générations futures, descendants »')).toBeVisible();
+  await expect(options(page)).toHaveCount(4);
+  for (const option of await options(page).all()) await expect(option).toHaveAttribute('lang', 'fr');
+
+  await options(page).filter({ hasText: 'postérité' }).click();
+  await expect(page.getByRole('status')).toHaveText('Bonne réponse !');
+});
+
 test('Memoir asks for at least four saved words', async ({ page }) => {
   await page.route(QUESTION_ROUTE, (route) => route.fulfill({ status: 404, json: { error: 'not_enough_words' } }));
   await page.goto('/memoir');
