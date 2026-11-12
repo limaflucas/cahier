@@ -1,4 +1,5 @@
 import { Link, Navigate, NavLink, useParams } from 'react-router-dom';
+import GenreCard from '../components/constructions/GenreCard.jsx';
 import PrepositionCard from '../components/constructions/PrepositionCard.jsx';
 import ReviewSession from '../components/games/ReviewSession.jsx';
 
@@ -21,6 +22,11 @@ const GAMES = {
     Card: PrepositionCard,
     nothing: 'Aucune construction à réviser.',
     notes: (start) => <Preparing count={start.preparing} />,
+  },
+  genre: {
+    label: 'Genre',
+    Card: GenreCard,
+    nothing: 'Aucun nom à réviser.',
   },
 };
 

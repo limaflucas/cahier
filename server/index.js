@@ -8,6 +8,7 @@ import { createConjugator } from './conjugator.js';
 import { createConstructionRefresher, prepositionsGame } from './constructions.js';
 import { createDictionary } from './dictionary.js';
 import { createFlags, createUnleashClient, parseOverrides } from './flags.js';
+import { genreGame } from './genre.js';
 import { loadLefff } from './lefff.js';
 import { createMemoir } from './memoir.js';
 import { createMyWords } from './myWords.js';
@@ -48,6 +49,7 @@ const app = createApp({
   games: [
     rappelGame({ myWords, dictionary, conjugator }),
     prepositionsGame({ myWords, dictionary, conjugator, refresher: createConstructionRefresher({ dictionary }) }),
+    genreGame({ myWords, dictionary }),
   ],
   staticDir: existsSync(spaDir) ? spaDir : undefined,
   build: readBuildInfo(),
