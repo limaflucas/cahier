@@ -1,56 +1,18 @@
-import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import compression from 'compression';
 import express from 'express';
 import { readBuildInfo } from './buildInfo.js';
 import { createFlags } from './flags.js';
+import { gameRoutes } from './gameRoutes.js';
 import { normalize } from './dictionary.js';
 import { UpstreamError } from './reverso.js';
+import { visitorContext } from './visitor.js';
 import { ListError } from './wordLists.js';
 
 const MAX_WORD_LENGTH = 100;
 const PREVIEW_PREPOSITIONS = 3;
-const SESSION_COOKIE = 'cahier_sid';
-const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+const GAME_PATHS = { rappel: '/api/rappel', prepositions: '/api/constructions/prepositions', genre: '/api/constructions/genre' };
 const asyncRoute = (handler) => (req, res, next) => handler(req, res).catch(next);
-
-/**
- * Reads one cookie from the request.
- * @param {import('express').Request} req
- * @param {string} name
- * @returns {string | undefined}
- */
-function readCookie(req, name) {
-  for (const part of (req.headers.cookie ?? '').split(';')) {
-    const [key, ...value] = part.trim().split('=');
-    if (key === name) return decodeURIComponent(value.join('='));
-  }
-  return undefined;
-}
-
-/**
- * The visitor's stable id for sticky Unleash rollouts, issuing one on first visit.
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @returns {string}
- */
-function sessionId(req, res) {
-  const existing = readCookie(req, SESSION_COOKIE);
-  if (existing) return existing;
-  const id = randomUUID();
-  res.cookie(SESSION_COOKIE, id, { httpOnly: true, sameSite: 'lax', secure: req.secure, maxAge: ONE_YEAR_MS });
-  return id;
-}
-
-/**
- * What Unleash knows about the visitor: sticky session, address and browser.
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @returns {{ sessionId: string, remoteAddress: string, properties: { userAgent: string } }}
- */
-function visitorContext(req, res) {
-  return { sessionId: sessionId(req, res), remoteAddress: req.ip, properties: { userAgent: req.get('user-agent') ?? '' } };
-}
 
 /**
  * The list id in the path, or null when it is not a positive integer.
@@ -111,10 +73,11 @@ function wordParam(req, res) {
  * @param {string} [deps.staticDir] absolute path to the built SPA (web/dist)
  * @param {{ name: string, version: string, commit: string }} [deps.build] what /api/version reports
  * @param {{ isEnabled(name: string, context: object): boolean, snapshot(context: object): Record<string, boolean> }} [deps.flags] feature flags
+ * @param {{ name: keyof typeof GAME_PATHS }[]} [deps.games] review games, each served under its path in GAME_PATHS
  * @returns {import('express').Express}
  */
 export function createApp({
-  db, dictionary, myWords, wordLists, conjugator, verbPicker, memoir, pronunciation,
+  db, dictionary, myWords, wordLists, conjugator, verbPicker, memoir, pronunciation, reviews, games = [],
   staticDir, build = readBuildInfo(), flags = createFlags(), logger = console,
 }) {
   const app = express();
@@ -221,6 +184,7 @@ export function createApp({
   }));
 
   if (wordLists) app.use('/api/lists', listRoutes(wordLists, flags));
+  for (const game of games) app.use(GAME_PATHS[game.name], gameRoutes({ game, reviews, flags }));
 
   app.use('/api', (_req, res) => res.status(404).json({ error: 'not_found' }));
 

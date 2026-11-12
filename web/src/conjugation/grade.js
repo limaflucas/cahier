@@ -1,16 +1,8 @@
-const APOSTROPHES = /[’‘`´]/g;
+import { normalizeAnswer, withoutAccents } from '../answer.js';
+
+export { normalizeAnswer };
+
 const SUBJECT = /^(?:que |qu')?(?:je |j'|tu |il |elle |on |nous |vous |ils |elles )/;
-
-export const normalizeAnswer = (text) =>
-  text
-    .normalize('NFC')
-    .toLowerCase()
-    .replace(APOSTROPHES, "'")
-    .replace(/\s*'\s*/g, "'")
-    .replace(/\s+/g, ' ')
-    .trim();
-
-const withoutAccents = (text) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').normalize('NFC');
 
 export function grade(input, answers) {
   const value = normalizeAnswer(input);

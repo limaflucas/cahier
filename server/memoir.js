@@ -1,5 +1,5 @@
 import { levelWeight } from './levels.js';
-import { inflectionsOf, markWord } from './locateWord.js';
+import { formsOf, markWord } from './locateWord.js';
 import { pickOne, shuffle, weightedChoice } from './random.js';
 import { headwordOf } from './reverso.js';
 
@@ -96,11 +96,6 @@ export function buildQuestion({ card, sense, cards, direction, forms, random }) 
 }
 
 export function createMemoir({ myWords, dictionary, conjugator, random = Math.random, logger = console }) {
-  function formsOf(word) {
-    const verbForms = conjugator.forms(word);
-    return verbForms.length > 0 ? verbForms : inflectionsOf(word);
-  }
-
   async function cardOf(word) {
     try {
       return toCard(await dictionary.definitions(word), word);
@@ -122,7 +117,7 @@ export function createMemoir({ myWords, dictionary, conjugator, random = Math.ra
       if (cards.length < OPTION_COUNT) return null;
       const card = cards.find((c) => c.word === word) ?? chooseCard(cards, exclude);
       const chosen = card.senses.find((s) => s.id === sense) ?? pickOne(card.senses, random);
-      const forms = formsOf(card.word);
+      const forms = formsOf(card.word, conjugator);
       for (const direction of shuffle(DIRECTIONS, random)) {
         const question = buildQuestion({ card, sense: chosen, cards, direction, forms, random });
         if (question) return question;

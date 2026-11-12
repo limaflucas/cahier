@@ -7,6 +7,17 @@ export function inflectionsOf(word) {
   return [word, ...endings.map((ending) => word + ending)];
 }
 
+/**
+ * Every form the word can take in a sentence: a verb's conjugated forms, else the word with its plural and feminine endings.
+ * @param {string} word
+ * @param {{ forms(word: string): string[] }} conjugator
+ * @returns {string[]}
+ */
+export function formsOf(word, conjugator) {
+  const verbForms = conjugator.forms(word);
+  return verbForms.length > 0 ? verbForms : inflectionsOf(word);
+}
+
 export function markWord(text, forms) {
   const alternatives = [...new Set(forms.map((form) => foldApostrophes(form.normalize('NFC'))))]
     .sort((a, b) => b.length - a.length)

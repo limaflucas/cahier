@@ -12,7 +12,9 @@ import { createMemoir } from './memoir.js';
 import { createMyWords } from './myWords.js';
 import { createPrepositionFinder } from './prepositions.js';
 import { createPronunciation, fetchAudioFiles } from './pronunciation.js';
+import { rappelGame } from './rappel.js';
 import { fetchDefinition } from './reverso.js';
+import { createReviews } from './reviews.js';
 import { createVerbPicker } from './verbPicker.js';
 import { createWordLists } from './wordLists.js';
 
@@ -41,6 +43,8 @@ const app = createApp({
   verbPicker: createVerbPicker({ myWords, dictionary, conjugator }),
   memoir: createMemoir({ myWords, dictionary, conjugator }),
   pronunciation: createPronunciation({ db, fetchAudioFiles }),
+  reviews: createReviews(db),
+  games: [rappelGame({ myWords, dictionary, conjugator })],
   staticDir: existsSync(spaDir) ? spaDir : undefined,
   build: readBuildInfo(),
   flags: createFlags({ client: unleash, overrides: parseOverrides(process.env.FLAGS_OVERRIDE) }),

@@ -10,6 +10,7 @@ const MENU = [
   { to: '/temps-verbaux', label: 'Temps verbaux' },
   { to: '/conjugaison', label: 'Conjugaison' },
   { to: '/memoir', label: 'Memoir' },
+  { to: '/rappel', label: 'Rappel', flag: 'cahier-rappel' },
 ];
 
 const ACTIVE = 'border-blue-600 font-semibold text-blue-700';
