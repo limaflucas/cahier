@@ -1,26 +1,13 @@
-import { Fragment, memo, useDeferredValue } from 'react';
+import { memo, useDeferredValue } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApi } from '../useApi.js';
 import { matchesSearch } from '../wordSearch.js';
-import Classification from '../components/Classification.jsx';
+import Classifications from '../components/Classifications.jsx';
 import KeyMeanings from '../components/KeyMeanings.jsx';
 
 const formatDate = (sqlDate) =>
   new Date(`${sqlDate.replace(' ', 'T')}Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-
-function Classifications({ classifications }) {
-  return (
-    <span className="text-sm">
-      {classifications.map(({ pos, gender }, i) => (
-        <Fragment key={`${pos}:${gender}`}>
-          {i > 0 && <span className="text-stone-400">, </span>}
-          <Classification pos={pos} gender={gender} />
-        </Fragment>
-      ))}
-    </span>
-  );
-}
 
 /**
  * One saved word with its classifications and key meanings. Filtering hides rows rather than unmounting them,

@@ -1,7 +1,9 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useMatch, useNavigate } from 'react-router-dom';
+import { api } from '../api.js';
 import { useFlag } from '../flags.jsx';
 import { readRecentSearches, rememberSearch } from '../searchHistory.js';
+import SavedWordPreview from './SavedWordPreview.jsx';
 
 const PURPOSES = {
   myWords: { placeholder: 'Filtrer mes mots…', label: 'Filtrer mes mots ou chercher un mot' },
@@ -9,6 +11,40 @@ const PURPOSES = {
   lookup: { placeholder: 'Chercher un mot…', label: 'Chercher un mot' },
 };
 
+const TYPING_PAUSE_MS = 150;
+
+/**
+ * The saved word the query names, asked for once typing pauses.
+ * @param {string} query
+ * @returns {object | null} null while the query names no saved word
+ */
+function useSavedWord(query) {
+  const [found, setFound] = useState({ query: '', saved: null });
+
+  useEffect(() => {
+    const word = query.trim();
+    if (!word) return undefined;
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      api.savedWord(word, controller.signal).then(
+        (saved) => setFound({ query, saved }),
+        () => controller.signal.aborted || setFound({ query, saved: null }),
+      );
+    }, TYPING_PAUSE_MS);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query]);
+
+  return found.query === query ? found.saved : null;
+}
+
+/**
+ * The header search: looks a word up, filters the page it is on, recalls recent searches
+ * and previews the saved word it names.
+ * @param {{ query: string, onQueryChange: (query: string) => void }} props
+ */
 export default function SearchBar({ query, onQueryChange }) {
   const navigate = useNavigate();
   const sacDeMots = useFlag('sac-de-mots');
@@ -18,7 +54,10 @@ export default function SearchBar({ query, onQueryChange }) {
   const listId = useId();
   const [recentSearches, setRecentSearches] = useState(null);
   const [active, setActive] = useState(0);
+  const [dismissed, setDismissed] = useState(false);
+  const savedWord = useSavedWord(query);
   const isOpen = recentSearches !== null;
+  const preview = !isOpen && !dismissed ? savedWord : null;
 
   const close = () => setRecentSearches(null);
 
@@ -31,7 +70,7 @@ export default function SearchBar({ query, onQueryChange }) {
 
   function submit(event) {
     event.preventDefault();
-    const word = isOpen ? recentSearches[active] : query.trim();
+    const word = isOpen ? recentSearches[active] : (preview?.word ?? query.trim());
     if (word) search(word);
   }
 
@@ -50,11 +89,16 @@ export default function SearchBar({ query, onQueryChange }) {
       open();
     } else if (event.key === 'Escape' && isOpen) {
       close();
+    } else if (event.key === 'Escape' && preview) {
+      setDismissed(true);
     } else {
       return;
     }
     event.preventDefault();
   }
+
+  const expanded = isOpen || preview !== null;
+  const activeOption = isOpen ? active : 0;
 
   return (
     <form onSubmit={submit} role="search" className="relative order-last flex w-full sm:order-none sm:w-auto sm:flex-1">
@@ -63,14 +107,19 @@ export default function SearchBar({ query, onQueryChange }) {
         value={query}
         onChange={(e) => {
           close();
+          setDismissed(false);
           onQueryChange(e.target.value);
         }}
         onKeyDown={handleKeyDown}
-        onBlur={close}
+        onFocus={() => setDismissed(false)}
+        onBlur={() => {
+          close();
+          setDismissed(true);
+        }}
         role="combobox"
-        aria-expanded={isOpen}
-        aria-controls={isOpen ? listId : undefined}
-        aria-activedescendant={isOpen ? `${listId}-${active}` : undefined}
+        aria-expanded={expanded}
+        aria-controls={expanded ? listId : undefined}
+        aria-activedescendant={expanded ? `${listId}-${activeOption}` : undefined}
         placeholder={purpose.placeholder}
         aria-label={purpose.label}
         lang="fr"
@@ -79,6 +128,7 @@ export default function SearchBar({ query, onQueryChange }) {
         spellCheck={false}
         className="w-full rounded-lg border border-stone-300 bg-stone-50 px-3 py-2 text-base outline-none focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20"
       />
+      {preview && <SavedWordPreview id={listId} saved={preview} onChoose={search} />}
       {isOpen && (
         <ul
           id={listId}

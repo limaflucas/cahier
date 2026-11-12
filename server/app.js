@@ -9,6 +9,7 @@ import { UpstreamError } from './reverso.js';
 import { ListError } from './wordLists.js';
 
 const MAX_WORD_LENGTH = 100;
+const PREVIEW_PREPOSITIONS = 3;
 const SESSION_COOKIE = 'cahier_sid';
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 const asyncRoute = (handler) => (req, res, next) => handler(req, res).catch(next);
@@ -168,6 +169,15 @@ export function createApp({
 
   app.get('/api/my-words', asyncRoute(async (_req, res) => {
     res.json(await Promise.all(myWords.list().map(withSummary)));
+  }));
+
+  app.get('/api/my-words/:word', asyncRoute(async (req, res) => {
+    const word = wordParam(req, res);
+    if (!word) return;
+    const saved = myWords.find(word);
+    if (!saved) return res.status(404).json({ error: 'not_saved' });
+    const prepositions = (dictionary.knownPrepositions(saved.word) ?? []).slice(0, PREVIEW_PREPOSITIONS);
+    res.json({ ...(await withSummary(saved)), prepositions });
   }));
 
   app.put('/api/my-words/:word', (req, res) => {

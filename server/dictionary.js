@@ -199,5 +199,15 @@ export function createDictionary({
       const cached = getPreps.get(verb);
       return cached ? JSON.parse(cached.json) : searches.get(verb);
     },
+
+    /**
+     * The verb's prepositions if already found; never searches or waits for a search.
+     * @param {string} verb
+     * @returns {object[] | null}
+     */
+    knownPrepositions(verb) {
+      const cached = getPreps.get(verb);
+      return cached ? JSON.parse(cached.json) : null;
+    },
   };
 }

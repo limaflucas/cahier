@@ -40,6 +40,7 @@ export const api = {
   lookup: (word, signal) => request(`/dictionary/${enc(word)}`, { signal }),
   prepositions: (verb, signal) => request(`/prepositions/${enc(verb)}`, { signal }),
   myWords: (signal) => request('/my-words', { signal }),
+  savedWord: (word, signal) => request(`/my-words/${enc(word)}`, { signal }),
   save: (word) => request(`/my-words/${enc(word)}`, { method: 'PUT' }),
   unsave: (word) => request(`/my-words/${enc(word)}`, { method: 'DELETE' }),
   conjugation: (verb, signal) => request(`/conjugation/${enc(verb)}`, { signal }),
