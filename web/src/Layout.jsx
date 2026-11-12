@@ -11,6 +11,7 @@ const MENU = [
   { to: '/conjugaison', label: 'Conjugaison' },
   { to: '/memoir', label: 'Memoir' },
   { to: '/rappel', label: 'Rappel', flag: 'cahier-rappel' },
+  { to: '/constructions', label: 'Constructions', flag: 'cahier-constructions' },
 ];
 
 const ACTIVE = 'border-blue-600 font-semibold text-blue-700';

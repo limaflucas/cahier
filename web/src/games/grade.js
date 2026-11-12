@@ -16,3 +16,26 @@ export function gradeRecall(input, { answer, word }) {
   const looselyTyped = withoutAccents(typed);
   return [expected, lemma].some((form) => withoutAccents(form) === looselyTyped) ? 'accent' : 'wrong';
 }
+
+const UNCONTRACTED = { au: 'à', aux: 'à', du: 'de', des: 'de', "d'": 'de' };
+const CONTRACTIONS = { au: 'à + le = au', aux: 'à + les = aux', du: 'de + le = du', des: 'de + les = des', "d'": "de + voyelle = d'" };
+
+/**
+ * @param {string} answer a preposition as a sentence writes it
+ * @returns {string | null} how it is contracted or elided, e.g. "à + le = au"; null when it is not
+ */
+export const contractionOf = (answer) => CONTRACTIONS[normalizeAnswer(answer)] ?? null;
+
+/**
+ * How a typed preposition compares with the one the sentence uses; '' stands for no preposition.
+ * @param {string} input
+ * @param {string} answer
+ * @returns {'correct' | 'contraction' | 'accent' | 'wrong'} contraction: right, but before contracting or eliding it
+ */
+export function gradePreposition(input, answer) {
+  const [typed, expected] = [input, answer].map(normalizeAnswer);
+  if (typed === expected) return 'correct';
+  if (withoutAccents(typed) === withoutAccents(expected)) return 'accent';
+  const uncontracted = UNCONTRACTED[expected];
+  return uncontracted && withoutAccents(typed) === withoutAccents(uncontracted) ? 'contraction' : 'wrong';
+}

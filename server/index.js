@@ -5,6 +5,7 @@ import { openDb } from './db.js';
 import { createApp } from './app.js';
 import { readBuildInfo } from './buildInfo.js';
 import { createConjugator } from './conjugator.js';
+import { createConstructionRefresher, prepositionsGame } from './constructions.js';
 import { createDictionary } from './dictionary.js';
 import { createFlags, createUnleashClient, parseOverrides } from './flags.js';
 import { loadLefff } from './lefff.js';
@@ -44,7 +45,10 @@ const app = createApp({
   memoir: createMemoir({ myWords, dictionary, conjugator }),
   pronunciation: createPronunciation({ db, fetchAudioFiles }),
   reviews: createReviews(db),
-  games: [rappelGame({ myWords, dictionary, conjugator })],
+  games: [
+    rappelGame({ myWords, dictionary, conjugator }),
+    prepositionsGame({ myWords, dictionary, conjugator, refresher: createConstructionRefresher({ dictionary }) }),
+  ],
   staticDir: existsSync(spaDir) ? spaDir : undefined,
   build: readBuildInfo(),
   flags: createFlags({ client: unleash, overrides: parseOverrides(process.env.FLAGS_OVERRIDE) }),

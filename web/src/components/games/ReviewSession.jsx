@@ -58,6 +58,23 @@ function Deck({ path, today, start, Card, empty, notes }) {
     setSession(next);
   }
 
+  return (
+    <>
+      {notes?.(start)}
+      {unsaved > 0 && <p role="alert" className="mt-4 text-sm text-rose-700">{unsavedMessage(unsaved)}</p>}
+      <Progress start={start} session={session} empty={empty}>
+        <Card key={session.turn} card={card} onFinish={finish} />
+      </Progress>
+    </>
+  );
+}
+
+/**
+ * Where the session stands: nothing to do today, finished, or the current card with how many remain.
+ * @param {{ start: { cards: object[], nextDueOn: string | null }, session: object, empty: import('react').ReactNode,
+ *   children: import('react').ReactNode }} props children: the current card
+ */
+function Progress({ start, session, empty, children }) {
   if (start.cards.length === 0) {
     if (!start.nextDueOn) return empty;
     return (
@@ -66,24 +83,20 @@ function Deck({ path, today, start, Card, empty, notes }) {
       </p>
     );
   }
-
+  if (isFinished(session)) {
+    return (
+      <div className="mt-8">
+        <p className="font-serif text-2xl text-stone-900">Séance terminée !</p>
+        <p className="mt-1 text-stone-600">{session.rightFirstTime} sur {session.total} du premier coup.</p>
+      </div>
+    );
+  }
   return (
     <>
-      {notes?.(start)}
-      {unsaved > 0 && <p role="alert" className="mt-4 text-sm text-rose-700">{unsavedMessage(unsaved)}</p>}
-      {isFinished(session) ? (
-        <div className="mt-8">
-          <p className="font-serif text-2xl text-stone-900">Séance terminée !</p>
-          <p className="mt-1 text-stone-600">{session.rightFirstTime} sur {session.total} du premier coup.</p>
-        </div>
-      ) : (
-        <>
-          <p className="mt-2 text-sm text-stone-500">
-            Restantes : <span className="font-semibold tabular-nums text-stone-900">{session.queue.length}</span>
-          </p>
-          <Card key={session.turn} card={card} onFinish={finish} />
-        </>
-      )}
+      <p className="mt-2 text-sm text-stone-500">
+        Restantes : <span className="font-semibold tabular-nums text-stone-900">{session.queue.length}</span>
+      </p>
+      {children}
     </>
   );
 }

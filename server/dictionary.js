@@ -82,6 +82,7 @@ export function createDictionary({
   const getRaws = db.prepare('SELECT query, json FROM reverso_cache WHERE query IN (SELECT value FROM json_each(?))');
   const putRaw = db.prepare('INSERT OR REPLACE INTO reverso_cache (query, json) VALUES (?, ?)');
   const getPreps = db.prepare('SELECT json FROM preposition_cache WHERE verb = ?');
+  const getManyPreps = db.prepare('SELECT verb, json FROM preposition_cache WHERE verb IN (SELECT value FROM json_each(?))');
   const putPreps = db.prepare('INSERT OR REPLACE INTO preposition_cache (verb, json) VALUES (?, ?)');
   const isSaved = db.prepare('SELECT 1 FROM my_words WHERE word = ?');
   const memory = createEntryMemory(db, { maxEntries, now });
@@ -107,9 +108,12 @@ export function createDictionary({
     return entry;
   }
 
-  async function prepositionsFor(verb) {
-    const cached = getPreps.get(verb);
-    if (cached) return JSON.parse(cached.json);
+  /**
+   * Asks Claude for the verb's prepositions and caches them in place of any cached before.
+   * @param {string} verb
+   * @returns {Promise<object[] | null>} null when Claude is not set up or failed
+   */
+  async function findAndCachePrepositions(verb) {
     if (!findPrepositions) return null;
     try {
       const constructions = await findPrepositions(verb);
@@ -119,6 +123,11 @@ export function createDictionary({
       logger.error(`prepositions for "${verb}" failed:`, err.message);
       return null;
     }
+  }
+
+  async function prepositionsFor(verb) {
+    const cached = getPreps.get(verb);
+    return cached ? JSON.parse(cached.json) : findAndCachePrepositions(verb);
   }
 
   const PENDING = 'pending';
@@ -209,5 +218,16 @@ export function createDictionary({
       const cached = getPreps.get(verb);
       return cached ? JSON.parse(cached.json) : null;
     },
+
+    /**
+     * The cached prepositions of these verbs, read in one query; verbs never searched are left out.
+     * @param {string[]} verbs
+     * @returns {Map<string, object[]>}
+     */
+    cachedPrepositions(verbs) {
+      return new Map(getManyPreps.all(JSON.stringify(verbs)).map(({ verb, json }) => [verb, JSON.parse(json)]));
+    },
+
+    refreshPrepositions: findAndCachePrepositions,
   };
 }
