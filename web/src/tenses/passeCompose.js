@@ -56,6 +56,7 @@ export default {
         { fr: 'La décision qu\'ils **ont prise** était risquée.', pt: 'A decisão que eles tomaram era arriscada.' },
         { fr: 'Ces photos, je les **ai prises** à Rome.', pt: 'Essas fotos, eu tirei em Roma.' },
       ],
+      see: { to: '/grammaire/cod-coi#accord-participe', label: 'COD et COI : l\'accord avec le COD placé avant' },
     },
     {
       title: 'Verbes à double auxiliaire',

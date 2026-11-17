@@ -40,6 +40,7 @@ export default {
         { fr: 'Quelles villes as-tu **visitées** ?', pt: 'Que cidades você visitou?' },
         { fr: 'Les efforts qu\'il a **faits** ont payé.', pt: 'Os esforços que ele fez valeram a pena.' },
       ],
+      see: { to: '/grammaire/cod-coi#accord-participe', label: 'COD et COI : l\'accord avec le COD placé avant' },
     },
     {
       title: 'Pas d\'accord avec « en »',

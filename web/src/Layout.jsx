@@ -8,6 +8,7 @@ const MENU = [
   { to: '/mes-mots', label: 'Mes mots' },
   { to: '/sac-de-mots', label: 'Sac de mots', flag: 'sac-de-mots' },
   { to: '/temps-verbaux', label: 'Temps verbaux' },
+  { to: '/grammaire', label: 'Grammaire' },
   { to: '/conjugaison', label: 'Conjugaison' },
   { to: '/memoir', label: 'Memoir' },
   { to: '/rappel', label: 'Rappel', flag: 'cahier-rappel' },

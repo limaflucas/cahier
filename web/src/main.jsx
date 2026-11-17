@@ -14,6 +14,8 @@ import Rappel from './pages/Rappel.jsx';
 import Constructions from './pages/Constructions.jsx';
 import WordLists from './pages/WordLists.jsx';
 import WordList from './pages/WordList.jsx';
+import Grammaire from './pages/Grammaire.jsx';
+import CodCoi from './pages/CodCoi.jsx';
 import './index.css';
 
 createRoot(document.getElementById('root')).render(
@@ -25,6 +27,7 @@ createRoot(document.getElementById('root')).render(
             <Route index element={<Home />} />
             <Route path="mot/:word" element={<WordPage />} />
             <Route path="mes-mots" element={<MyWords />} />
+            <Route path="grammaire" element={<Grammaire />} />
             <Route path="sac-de-mots" element={<Flagged name="sac-de-mots"><WordLists /></Flagged>} />
             <Route path="sac-de-mots/:id" element={<Flagged name="sac-de-mots"><WordList /></Flagged>} />
             <Route path="conjugaison" element={<ConjugationSetup />} />
@@ -35,6 +38,7 @@ createRoot(document.getElementById('root')).render(
           </Route>
           <Route element={<Layout wide />}>
             <Route path="temps-verbaux" element={<TempsVerbaux />} />
+            <Route path="grammaire/cod-coi" element={<CodCoi />} />
             <Route path="conjugaison/:verb" element={<ConjugationGame />} />
           </Route>
         </Routes>

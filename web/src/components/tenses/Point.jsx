@@ -1,5 +1,10 @@
 import Marked from '../Marked.jsx';
+import SeeAlso from '../SeeAlso.jsx';
 
+/**
+ * One usage point of a tense: title, explanation, Portuguese note, examples and a related rule.
+ * @param {{ point: { title: string, text?: string, note?: string, examples: object[], see?: object } }} props
+ */
 export default function Point({ point }) {
   return (
     <li>
@@ -16,6 +21,7 @@ export default function Point({ point }) {
           ))}
         </ul>
       )}
+      {point.see && <SeeAlso see={point.see} />}
     </li>
   );
 }

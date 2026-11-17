@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApi } from '../useApi.js';
+import { useScrollToHash } from '../useScrollToHash.js';
 import { TENSES, groupByMood } from '../tenses/index.js';
 import Overview from '../components/tenses/Overview.jsx';
 import TenseSection from '../components/tenses/TenseSection.jsx';
@@ -17,17 +16,6 @@ const TABLE_OF_CONTENTS = groupByMood(TENSES, (tense) => tense.mood);
 async function loadModels(signal) {
   const boards = await Promise.all(MODEL_VERBS.map((verb) => api.conjugation(verb, signal)));
   return Object.fromEntries(MODEL_VERBS.map((verb, i) => [verb, boards[i]]));
-}
-
-/**
- * Scrolls to the tense named in the URL hash, again once the models have loaded.
- * @param {string} ready the models' loading status
- */
-function useScrollToHash(ready) {
-  const { hash } = useLocation();
-  useEffect(() => {
-    if (hash) document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView();
-  }, [hash, ready]);
 }
 
 /** The page's table of contents, tenses grouped by mood. */
