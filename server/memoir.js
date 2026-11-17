@@ -1,10 +1,9 @@
-import { levelWeight } from './levels.js';
+import { levelWeight, sensesWeight } from './levels.js';
 import { formsOf, markWord } from './locateWord.js';
 import { pickOne, shuffle, weightedChoice } from './random.js';
 import { headwordOf } from './reverso.js';
 
 const EXCLUDED_LEVELS = new Set(['Rare', 'C2']);
-const ADVANCED_BONUS = 1;
 const OPTION_COUNT = 4;
 const MAX_CLUE_TRANSLATIONS = 3;
 const DIRECTIONS = ['fr-pt', 'pt-fr'];
@@ -29,7 +28,21 @@ export function toCard(entry, word) {
   return { word, senses, translations: new Set(all.flatMap((sense) => sense.translations.map(fold))) };
 }
 
-export const cardWeight = (card) => levelWeight(card.senses, ADVANCED_BONUS);
+/**
+ * How likely the word is to be asked about: the average weight of the meanings Memoir can ask.
+ * @param {{ senses: { level: string | null }[] }} card
+ * @returns {number}
+ */
+export const cardWeight = (card) => sensesWeight(card.senses);
+
+/**
+ * One of the card's meanings, drawn by its level's weight.
+ * @param {{ senses: object[] }} card
+ * @param {() => number} random
+ * @returns {object}
+ */
+const drawSense = (card, random) =>
+  weightedChoice(card.senses.map((sense) => ({ value: sense, weight: levelWeight(sense.level) })), random);
 
 function chooseClue(direction, sense, examples, random) {
   const language = CLUE_LANGUAGE[direction];
@@ -116,7 +129,7 @@ export function createMemoir({ myWords, dictionary, conjugator, random = Math.ra
       const cards = (await Promise.all(myWords.list().map((saved) => cardOf(saved.word)))).filter(Boolean);
       if (cards.length < OPTION_COUNT) return null;
       const card = cards.find((c) => c.word === word) ?? chooseCard(cards, exclude);
-      const chosen = card.senses.find((s) => s.id === sense) ?? pickOne(card.senses, random);
+      const chosen = card.senses.find((s) => s.id === sense) ?? drawSense(card, random);
       const forms = formsOf(card.word, conjugator);
       for (const direction of shuffle(DIRECTIONS, random)) {
         const question = buildQuestion({ card, sense: chosen, cards, direction, forms, random });

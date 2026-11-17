@@ -1,3 +1,4 @@
+import { sensesWeight } from './levels.js';
 import { headwordOf } from './reverso.js';
 
 const MAX_TRANSLATIONS = 3;
@@ -69,30 +70,45 @@ export function genreCard(word, entry) {
 }
 
 /**
- * Genre: the article of each saved noun, newest saved first.
+ * Genre: the article of each saved noun. Each day's new nouns are drawn among the newest saved, by weight.
  * @param {object} deps
  * @param {ReturnType<typeof import('./myWords.js').createMyWords>} deps.myWords
  * @param {{ definitions(word: string): Promise<object | null> }} deps.dictionary
  */
 export function genreGame({ myWords, dictionary, logger = console }) {
+  /**
+   * @param {string} word
+   * @returns {Promise<object | null>} the word's dictionary entry, null when the dictionary fails
+   */
+  async function entryOf(word) {
+    try {
+      return await dictionary.definitions(word);
+    } catch (err) {
+      logger.error(`definitions for "${word}" failed:`, err.message);
+      return null;
+    }
+  }
+
   return {
     name: 'genre',
     flag: 'cahier-constructions',
 
-    /** @returns {Promise<{ items: { word: string, item: string }[] }>} every saved word: only nouns get a card */
+    /** @returns {Promise<{ items: { word: string, item: string }[] }>} every saved word, newest first: only nouns get a card */
     items: async () => ({ items: myWords.list().map(({ word }) => ({ word, item: '' })) }),
 
     /**
      * @param {{ word: string }} item
      * @returns {Promise<object | null>}
      */
-    async cardOf({ word }) {
-      try {
-        return genreCard(word, await dictionary.definitions(word));
-      } catch (err) {
-        logger.error(`definitions for "${word}" failed:`, err.message);
-        return null;
-      }
+    cardOf: async ({ word }) => genreCard(word, await entryOf(word)),
+
+    /**
+     * @param {{ word: string }} item
+     * @returns {Promise<number>} the average weight of the meanings of the word's first part of speech, the noun's
+     */
+    async weightOf({ word }) {
+      const [first] = headwordOf(await entryOf(word), word)?.sections ?? [];
+      return sensesWeight(first?.senses ?? []);
     },
   };
 }

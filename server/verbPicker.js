@@ -1,7 +1,5 @@
-import { levelWeight } from './levels.js';
+import { levelWeight, sensesWeight } from './levels.js';
 import { weightedChoice } from './random.js';
-
-const ADVANCED_BONUS = 3;
 
 function verbSenses(entry, word) {
   return (entry?.words ?? [])
@@ -11,19 +9,28 @@ function verbSenses(entry, word) {
     .flatMap((section) => section.senses);
 }
 
+/**
+ * How likely the verb is to be drawn: the average weight of its verb meanings, 0 when the dictionary lists none,
+ * and the weight of unlevelled content when the dictionary has no entry for it.
+ * @param {object | null} entry the verb's dictionary entry
+ * @param {string} word
+ * @returns {number}
+ */
 export function verbWeight(entry, word) {
-  if (!entry) return 1;
-  const senses = verbSenses(entry, word);
-  return senses.length === 0 ? 0 : levelWeight(senses, ADVANCED_BONUS);
+  return entry ? sensesWeight(verbSenses(entry, word)) : levelWeight(null);
 }
 
 export function createVerbPicker({ myWords, dictionary, conjugator, random = Math.random, logger = console }) {
+  /**
+   * @param {string} word
+   * @returns {Promise<number>} the verb's weight, that of unlevelled content when the dictionary fails
+   */
   async function weightOf(word) {
     try {
       return verbWeight(await dictionary.definitions(word), word);
     } catch (err) {
       logger.error(`definitions for "${word}" failed:`, err.message);
-      return 1;
+      return levelWeight(null);
     }
   }
 

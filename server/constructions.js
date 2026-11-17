@@ -1,3 +1,5 @@
+import { verbWeight } from './verbPicker.js';
+
 const BLANK = /_{2,}/g;
 
 /**
@@ -88,13 +90,15 @@ export function createConstructionRefresher({ dictionary, logger = console }) {
 
 /**
  * Prépositions: type the preposition of a saved verb's construction, then see how Portuguese says it.
+ * Each day's new constructions are drawn among those of the newest saved verbs, by the verb's weight.
  * @param {object} deps
  * @param {ReturnType<typeof import('./myWords.js').createMyWords>} deps.myWords
- * @param {{ cachedPrepositions(verbs: string[]): Map<string, object[]> }} deps.dictionary
+ * @param {{ cachedPrepositions(verbs: string[]): Map<string, object[]>,
+ *   definitions(word: string): Promise<object | null> }} deps.dictionary
  * @param {{ isVerb(word: string): boolean }} deps.conjugator
  * @param {ReturnType<typeof createConstructionRefresher>} deps.refresher
  */
-export function prepositionsGame({ myWords, dictionary, conjugator, refresher }) {
+export function prepositionsGame({ myWords, dictionary, conjugator, refresher, logger = console }) {
   return {
     name: 'prepositions',
     flag: 'cahier-constructions',
@@ -115,5 +119,18 @@ export function prepositionsGame({ myWords, dictionary, conjugator, refresher })
      * @returns {Promise<object>}
      */
     cardOf: async ({ construction }) => prepositionCard(construction),
+
+    /**
+     * @param {{ word: string }} item
+     * @returns {Promise<number>} the weight of the construction's verb
+     */
+    async weightOf({ word }) {
+      try {
+        return verbWeight(await dictionary.definitions(word), word);
+      } catch (err) {
+        logger.error(`definitions for "${word}" failed:`, err.message);
+        return verbWeight(null, word);
+      }
+    },
   };
 }

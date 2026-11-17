@@ -51,7 +51,8 @@ test('a session lists today’s cards', () =>
     assert.equal(card.word, 'penser');
     assert.equal(card.item, '');
     assert.equal(card.answer, 'penser');
-    assert.equal(card.sentence, "Il faut **penser** avant d'agir dans cette situation.");
+    assert.equal(card.sentence, null);
+    assert.equal(card.definition, 'se souvenir de quelque chose du passé');
   }));
 
 test('an answer moves the word along and takes it out of today’s session', () =>
@@ -65,7 +66,7 @@ test('an answer moves the word along and takes it out of today’s session', () 
 
     const tomorrow = await (await sessionOn(base, '2026-11-13')).json();
     assert.equal(tomorrow.due, 1);
-    assert.equal(tomorrow.cards[0].level, 'B2');
+    assert.equal(tomorrow.cards[0].level, 'C1');
   }));
 
 test('a bad day or answer is refused', () =>

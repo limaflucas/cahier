@@ -1,8 +1,18 @@
+import { levelWeight, sensesWeight } from './levels.js';
 import { formsOf, markWord } from './locateWord.js';
 import { headwordOf } from './reverso.js';
 import { keySensesOf } from './wordSummary.js';
 
 const MAX_TRANSLATIONS = 3;
+
+/**
+ * The word's key senses, the highest-weighted first; senses of equal weight keep the order Mes mots shows.
+ * @param {object | null} entry
+ * @param {string} word
+ * @returns {object[]}
+ */
+const keySensesByWeight = (entry, word) =>
+  keySensesOf(headwordOf(entry, word)?.sections ?? []).sort((a, b) => levelWeight(b.level) - levelWeight(a.level));
 
 /**
  * The example with the word blanked out, when the example uses the word exactly once.
@@ -35,13 +45,14 @@ function senseCard(sense, word, forms, round) {
 }
 
 /**
- * A Rappel card: the word to type from memory, asked through one of its key senses, the next one each turn.
+ * A Rappel card: the word to type from memory, asked through one of its key senses, the next one each turn,
+ * starting with the highest-weighted.
  * @param {{ word: string, entry: object | null, forms: string[], turn: number }} options
  *   turn: how often the word was answered before
  * @returns {object | null} null when no key sense can ask for the word
  */
 export function rappelCard({ word, entry, forms, turn }) {
-  const senses = keySensesOf(headwordOf(entry, word)?.sections ?? []);
+  const senses = keySensesByWeight(entry, word);
   for (let offset = 0; offset < senses.length; offset++) {
     const card = senseCard(senses[(turn + offset) % senses.length], word, forms, Math.floor(turn / senses.length));
     if (card) return card;
@@ -50,18 +61,31 @@ export function rappelCard({ word, entry, forms, turn }) {
 }
 
 /**
- * Rappel: type a saved word from memory, newest saved first.
+ * Rappel: type a saved word from memory. Each day's new words are drawn among the newest saved, by weight.
  * @param {object} deps
  * @param {ReturnType<typeof import('./myWords.js').createMyWords>} deps.myWords
  * @param {{ definitions(word: string): Promise<object | null> }} deps.dictionary
  * @param {{ forms(word: string): string[] }} deps.conjugator
  */
 export function rappelGame({ myWords, dictionary, conjugator, logger = console }) {
+  /**
+   * @param {string} word
+   * @returns {Promise<object | null>} the word's dictionary entry, null when the dictionary fails
+   */
+  async function entryOf(word) {
+    try {
+      return await dictionary.definitions(word);
+    } catch (err) {
+      logger.error(`definitions for "${word}" failed:`, err.message);
+      return null;
+    }
+  }
+
   return {
     name: 'rappel',
     flag: 'cahier-rappel',
 
-    /** @returns {Promise<{ items: { word: string, item: string }[] }>} */
+    /** @returns {Promise<{ items: { word: string, item: string }[] }>} newest saved first */
     items: async () => ({ items: myWords.list().map(({ word }) => ({ word, item: '' })) }),
 
     /**
@@ -70,13 +94,15 @@ export function rappelGame({ myWords, dictionary, conjugator, logger = console }
      * @returns {Promise<object | null>}
      */
     async cardOf({ word }, progress) {
-      try {
-        const entry = await dictionary.definitions(word);
-        return rappelCard({ word, entry, forms: formsOf(word, conjugator), turn: progress?.answered ?? 0 });
-      } catch (err) {
-        logger.error(`definitions for "${word}" failed:`, err.message);
-        return null;
-      }
+      return rappelCard({ word, entry: await entryOf(word), forms: formsOf(word, conjugator), turn: progress?.answered ?? 0 });
+    },
+
+    /**
+     * @param {{ word: string }} item
+     * @returns {Promise<number>} the average weight of the word's key meanings
+     */
+    async weightOf({ word }) {
+      return sensesWeight(keySensesOf(headwordOf(await entryOf(word), word)?.sections ?? []));
     },
   };
 }

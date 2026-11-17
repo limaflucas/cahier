@@ -20,7 +20,8 @@ function dayOf(sent) {
  * The API of one review game, which exists only while the game's flag is on:
  * GET /session?today= gives today's cards, POST /answers records an answer.
  * @param {object} deps
- * @param {{ name: string, flag: string, items(): Promise<{ items: object[] }>, cardOf: Function }} deps.game
+ * @param {{ name: string, flag: string, items(): Promise<{ items: object[] }>, cardOf: Function, weightOf?: Function }} deps.game
+ *   weightOf: how likely an item is to be among the day's new ones
  * @param {ReturnType<typeof import('./reviews.js').createReviews>} deps.reviews
  * @param {{ isEnabled(name: string, context: object): boolean }} deps.flags
  * @returns {import('express').Router}
@@ -37,7 +38,9 @@ export function gameRoutes({ game, reviews, flags }) {
    */
   async function sessionOf(today) {
     const { items, ...details } = await game.items();
-    const session = await buildSession({ items, progress: reviews.progress(game.name), today, cardOf: game.cardOf });
+    const session = await buildSession({
+      items, progress: reviews.progress(game.name), today, cardOf: game.cardOf, weightOf: game.weightOf, seed: game.name,
+    });
     return { ...session, ...details };
   }
 

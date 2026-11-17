@@ -70,7 +70,7 @@ export default function ConjugationSetup() {
         </form>
       </div>
 
-      <p className="mt-2 text-sm text-stone-500">« Piocher » choisit un verbe de vos mots ; ceux aux sens B2 et C1 sortent plus souvent.</p>
+      <p className="mt-2 text-sm text-stone-500">« Piocher » choisit un verbe de vos mots ; ceux de niveau B1 à C1 sortent plus souvent.</p>
       {error && <p role="alert" className="mt-2 text-sm text-rose-700">{error}</p>}
     </div>
   );

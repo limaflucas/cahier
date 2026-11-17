@@ -47,7 +47,8 @@ test('new items are capped at 10 a day, minus those already started today', asyn
     today: TODAY,
     cardOf: plainCard,
   });
-  assert.deepEqual(sorted(session.cards), unseen.slice(0, 7));
+  assert.equal(session.cards.length, 7);
+  for (const word of sorted(session.cards)) assert.ok(unseen.includes(word), `${word} is not new`);
   assert.equal(session.fresh, 7);
 });
 
@@ -64,7 +65,8 @@ test('items whose card cannot be built are skipped and the next new item takes t
     today: TODAY,
     cardOf: async ({ word }) => (word === 'vieux' || word === words[1] ? null : {}),
   });
-  assert.deepEqual(sorted(session.cards), words.filter((word) => word !== words[1]).slice(0, 10));
+  assert.equal(session.cards.length, 10);
+  for (const word of sorted(session.cards)) assert.ok(words.includes(word) && word !== words[1], `${word} has no card`);
   assert.equal(session.due, 0);
   assert.equal(session.fresh, 10);
 });

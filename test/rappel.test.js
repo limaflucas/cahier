@@ -11,8 +11,8 @@ const PENSER_FORMS = ['penser', 'pense', 'penses', 'pensons', 'pensez', 'pensent
 const sense = (definition, translations, examples = []) => ({ level: 'B1', definition, tags: [], translations, examples });
 const entryOf = (word, ...senses) => ({ query: word, words: [{ word, ipa: null, sections: [{ pos: 'Verb', gender: null, senses }] }] });
 
-test('the card blanks the word in an example of its first key meaning', () => {
-  assert.deepEqual(rappelCard({ word: 'penser', entry: PENSER, forms: PENSER_FORMS, turn: 0 }), {
+test('the card blanks the word in an example of the key meaning it asks', () => {
+  assert.deepEqual(rappelCard({ word: 'penser', entry: PENSER, forms: PENSER_FORMS, turn: 2 }), {
     sentence: "Il faut **penser** avant d'agir dans cette situation.",
     answer: 'penser',
     portuguese: 'É preciso **pensar** antes de agir nessa situação.',
@@ -27,7 +27,7 @@ test('the card blanks the word in an example of its first key meaning', () => {
 test('each turn uses the next key meaning, in turn', () => {
   const levels = [0, 1, 2, 3].map((turn) => rappelCard({ word: 'penser', entry: PENSER, forms: PENSER_FORMS, turn }))
     .map(({ pos, level }) => `${pos} ${level}`);
-  assert.deepEqual(levels, ['Verb A1', 'Verb B2', 'Noun C1', 'Verb A1']);
+  assert.deepEqual(levels, ['Verb B2', 'Noun C1', 'Verb A1', 'Verb B2']);
 });
 
 test('the sentence hides the form it uses', () => {
@@ -40,8 +40,8 @@ test('the sentence hides the form it uses', () => {
 });
 
 test('the Portuguese sentence comes along when Reverso has one', () => {
-  const first = rappelCard({ word: 'penser', entry: PENSER, forms: PENSER_FORMS, turn: 0 });
-  const later = rappelCard({ word: 'penser', entry: PENSER, forms: PENSER_FORMS, turn: 3 });
+  const first = rappelCard({ word: 'penser', entry: PENSER, forms: PENSER_FORMS, turn: 2 });
+  const later = rappelCard({ word: 'penser', entry: PENSER, forms: PENSER_FORMS, turn: 5 });
   assert.equal(first.portuguese, 'É preciso **pensar** antes de agir nessa situação.');
   assert.equal(later.sentence, 'Je dois **penser** à mon avenir sérieusement.');
   assert.equal(later.portuguese, null);
@@ -107,8 +107,8 @@ test('items are the saved words, newest first', async () => {
 
 test('a card’s turn is how often the word was answered', async () => {
   const game = gameWith();
-  assert.equal((await game.cardOf({ word: 'penser', item: '' }, undefined)).level, 'A1');
-  assert.equal((await game.cardOf({ word: 'penser', item: '' }, { answered: 1 })).level, 'B2');
+  assert.equal((await game.cardOf({ word: 'penser', item: '' }, undefined)).level, 'B2');
+  assert.equal((await game.cardOf({ word: 'penser', item: '' }, { answered: 1 })).level, 'C1');
 });
 
 test('a dictionary failure gives no card', async () => {

@@ -22,16 +22,18 @@ function pickerWith({ saved, verbs, entries, random = () => 0, logger = { error(
   return createVerbPicker({ myWords, dictionary, conjugator, random, logger });
 }
 
-test('verbWeight favours verbs whose senses are mostly B2 or C1', () => {
-  assert.equal(verbWeight(null, 'plier'), 1);
-  assert.equal(verbWeight(entryWith('plier', 'Verb', ['A1', 'B1']), 'plier'), 1);
-  assert.equal(verbWeight(entryWith('plier', 'Verb', ['A1', 'B2', 'C1', 'C2']), 'plier'), 2.5);
-  assert.equal(verbWeight(entryWith('plier', 'Verb', ['C1']), 'plier'), 4);
+const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-12, `${actual} instead of ${expected}`);
+
+test('verbWeight averages the weights of the verb’s meanings', () => {
+  near(verbWeight(null, 'plier'), Math.exp(-2));
+  near(verbWeight(entryWith('plier', 'Verb', ['A1', 'B1']), 'plier'), (Math.exp(-8) + 1) / 2);
+  near(verbWeight(entryWith('plier', 'Verb', ['A1', 'B2', 'C1', 'C2']), 'plier'), (Math.exp(-8) + 1 + 1 + Math.exp(-2)) / 4);
+  assert.equal(verbWeight(entryWith('plier', 'Verb', ['C1']), 'plier'), 1);
   assert.equal(verbWeight(entryWith('devoir', 'Noun', ['B2']), 'devoir'), 0);
 });
 
 test('pick draws saved verbs in proportion to their weight', async () => {
-  const entries = { plier: entryWith('plier', 'Verb', ['A1']), saisir: entryWith('saisir', 'Verb', ['C1']) };
+  const entries = { plier: entryWith('plier', 'Verb', ['A2']), saisir: entryWith('saisir', 'Verb', ['C1']) };
   const options = { saved: ['plier', 'pliable', 'saisir'], verbs: ['plier', 'saisir'], entries };
   assert.equal(await pickerWith({ ...options, random: () => 0.1 }).pick(), 'plier');
   assert.equal(await pickerWith({ ...options, random: () => 0.5 }).pick(), 'saisir');

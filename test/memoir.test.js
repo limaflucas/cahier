@@ -50,10 +50,10 @@ test('toCard keeps A1–C1 senses with translations, numbered across the whole e
   assert.equal(toCard(null, 'rien'), null);
 });
 
-test('cardWeight doubles for words whose senses are all B2 or C1', () => {
-  assert.equal(cardWeight(card('aboutir')), 2);
+test('cardWeight gives B1, B2 and C1 words the same weight', () => {
+  assert.equal(cardWeight(card('aboutir')), 1);
   assert.equal(cardWeight(card('taille')), 1);
-  assert.equal(cardWeight(card('mener')), 1.5);
+  assert.equal(cardWeight(card('mener')), 1);
 });
 
 test('FR → PT phrase highlights the word and asks for its Portuguese translation', () => {
