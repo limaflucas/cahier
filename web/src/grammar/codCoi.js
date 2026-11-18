@@ -4,6 +4,13 @@ export default {
     fr: "Le complément d'objet direct et le complément d'objet indirect : ce qu'ils sont, comment les reconnaître, et les règles qui en dépendent, des pronoms à l'accord du participe passé, jusqu'aux finesses des niveaux B2 et C1.",
     pt: 'O objeto direto e o objeto indireto: o que são, como reconhecê-los e as regras que dependem deles, dos pronomes à concordância do particípio, até as sutilezas dos níveis B2 e C1.',
   },
+  parts: {
+    whatTheyAre: { id: 'ce-que-c-est', title: "Ce que c'est" },
+    spotting: { id: 'les-reperer', title: 'Les repérer' },
+    basics: { id: 'regles-de-base', title: 'Règles de base' },
+    advanced: { id: 'niveau-b2-c1', title: 'Niveau B2–C1' },
+    pitfalls: { id: 'pieges-pour-lusophones', title: 'Pièges pour lusophones' },
+  },
   legend: [
     { kind: 'COD', hint: 'sans préposition : qui ? quoi ?', pt: 'objeto direto' },
     { kind: 'COI', hint: 'après à, de… : à qui ? de quoi ?', pt: 'objeto indireto' },

@@ -7,14 +7,10 @@ import Complements, { Swatch } from '../components/grammar/Complements.jsx';
 import Examples from '../components/grammar/Examples.jsx';
 import Legend from '../components/grammar/Legend.jsx';
 import Rule from '../components/grammar/Rule.jsx';
+import SeeAlso from '../components/SeeAlso.jsx';
 
-const PARTS = {
-  whatTheyAre: { id: 'ce-que-c-est', title: "Ce que c'est" },
-  spotting: { id: 'les-reperer', title: 'Les repérer' },
-  basics: { id: 'regles-de-base', title: 'Règles de base' },
-  advanced: { id: 'niveau-b2-c1', title: 'Niveau B2–C1' },
-  pitfalls: { id: 'pieges-pour-lusophones', title: 'Pièges pour lusophones' },
-};
+const PARTS = codCoi.parts;
+const PRONOMS = { to: '/pronoms#tableau', label: 'Pronoms : tous les pronoms dans un tableau', flag: 'cahier-pronoms' };
 
 /** The page's table of contents, one link per part. */
 function TableOfContents() {
@@ -224,6 +220,7 @@ export default function CodCoi() {
         <h1 className="mt-1 font-serif text-4xl font-semibold text-stone-900">{codCoi.title}</h1>
         <p className="mt-3 text-lg text-stone-700"><Complements text={codCoi.summary.fr} /></p>
         <p lang="pt" className="mt-1 text-blue-800">{codCoi.summary.pt}</p>
+        <SeeAlso see={PRONOMS} />
       </header>
 
       <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[12rem_minmax(0,1fr)]">

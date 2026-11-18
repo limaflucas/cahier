@@ -7,6 +7,7 @@ import Home from './pages/Home.jsx';
 import WordPage from './pages/WordPage.jsx';
 import MyWords from './pages/MyWords.jsx';
 import TempsVerbaux from './pages/TempsVerbaux.jsx';
+import Pronoms from './pages/Pronoms.jsx';
 import ConjugationSetup from './pages/ConjugationSetup.jsx';
 import ConjugationGame from './pages/ConjugationGame.jsx';
 import Memoir from './pages/Memoir.jsx';
@@ -38,6 +39,7 @@ createRoot(document.getElementById('root')).render(
           </Route>
           <Route element={<Layout wide />}>
             <Route path="temps-verbaux" element={<TempsVerbaux />} />
+            <Route path="pronoms" element={<Flagged name="cahier-pronoms"><Pronoms /></Flagged>} />
             <Route path="grammaire/cod-coi" element={<CodCoi />} />
             <Route path="conjugaison/:verb" element={<ConjugationGame />} />
           </Route>
