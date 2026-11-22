@@ -1,5 +1,12 @@
+import { negationParts } from '../../tenses/negation.js';
+
 const MIN_VISIBLE_STEM = 2;
 
+/**
+ * The longest beginning all the words share.
+ * @param {string[]} words
+ * @returns {string}
+ */
 function commonPrefix(words) {
   let prefix = words[0];
   for (const word of words) {
@@ -8,6 +15,10 @@ function commonPrefix(words) {
   return prefix;
 }
 
+/**
+ * A model form, its ending in blue, or its auxiliary when the tense is compound.
+ * @param {{ form: string, stem: string, compound: boolean }} props
+ */
 function Form({ form, stem, compound }) {
   if (compound) {
     const split = form.lastIndexOf(' ');
@@ -27,13 +38,35 @@ function Form({ form, stem, compound }) {
   );
 }
 
+/**
+ * A form's negative on a line of its own, ne, n' and pas in blue.
+ * @param {{ form: string }} props
+ */
+function Negative({ form }) {
+  return (
+    <span className="block text-stone-600">
+      {negationParts(form).map(({ text, negation }, index) =>
+        negation ? <span key={index} className="text-blue-700">{text}</span> : text,
+      )}
+    </span>
+  );
+}
+
+/**
+ * A tense's model verbs side by side, each form above its negative.
+ * @param {{ tense: object, boards: Record<string, object> }} props
+ */
 export default function ModelConjugations({ tense, boards }) {
   const models = tense.models.map((verb) => boards[verb]).filter(Boolean);
   if (models.length === 0) return null;
 
-  const formsOf = (board) => board.tenses[tense.id].cells.map((cell) => cell.answers[0]);
-  const columns = models.map((board) => ({ verb: board.verb, forms: formsOf(board) }));
-  const labels = models[0].tenses[tense.id].cells.map((cell) => cell.label);
+  const cellsOf = (board) => board.tenses[tense.id].cells;
+  const columns = models.map((board) => ({
+    verb: board.verb,
+    forms: cellsOf(board).map((cell) => cell.answers[0]),
+    negatives: cellsOf(board).map((cell) => cell.negative),
+  }));
+  const labels = cellsOf(models[0]).map((cell) => cell.label);
   const personal = labels.length > 1;
   const compound = Boolean(tense.formation.auxiliary);
 
@@ -52,13 +85,14 @@ export default function ModelConjugations({ tense, boards }) {
           {labels.map((label, index) => (
             <tr key={index} className="border-t border-stone-100">
               {personal && (
-                <th scope="row" lang="fr" className="py-1 pr-3 text-left text-xs font-normal whitespace-nowrap text-stone-500">
+                <th scope="row" lang="fr" className="py-1 pr-3 text-left align-baseline text-xs font-normal whitespace-nowrap text-stone-500">
                   {label}
                 </th>
               )}
-              {columns.map(({ verb, forms }) => (
-                <td key={verb} lang="fr" className="px-2 py-1 font-serif whitespace-nowrap text-stone-800">
+              {columns.map(({ verb, forms, negatives }) => (
+                <td key={verb} lang="fr" className="px-2 py-1 align-baseline font-serif whitespace-nowrap text-stone-800">
                   <Form form={forms[index]} stem={commonPrefix(forms)} compound={compound} />
+                  <Negative form={negatives[index]} />
                 </td>
               ))}
             </tr>

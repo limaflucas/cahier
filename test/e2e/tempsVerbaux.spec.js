@@ -37,3 +37,34 @@ test('the page fits a phone screen, wide tables scroll inside their box', async 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBe(0);
 });
+
+test('every Modèles table shows each form above its negative', async ({ page }) => {
+  await page.goto('/temps-verbaux');
+  const cells = (tense, row) => section(section(page, tense), 'Modèles').getByRole('row').nth(row).getByRole('cell');
+  const lines = { useInnerText: true };
+
+  await expect(cells('Présent', 1)).toHaveText(['parle ne parle pas', 'finis ne finis pas', 'prends ne prends pas'], lines);
+  await expect(cells('Passé composé', 1)).toHaveText(
+    ["ai parlé n'ai pas parlé", 'suis allé ne suis pas allé', 'me suis levé ne me suis pas levé'],
+    lines,
+  );
+  await expect(cells('Passé composé', 3)).toHaveText(
+    ["a parlé n'a pas parlé", "est allé n'est pas allé", "s'est levé ne s'est pas levé"],
+    lines,
+  );
+  await expect(cells('Subjonctif passé', 1)).toHaveText(
+    ["aie parlé n'aie pas parlé", 'sois allé ne sois pas allé', 'me sois levé ne me sois pas levé'],
+    lines,
+  );
+  await expect(cells('Gérondif', 1)).toHaveText(
+    ['en parlant en ne parlant pas', 'en finissant en ne finissant pas', 'en prenant en ne prenant pas'],
+    lines,
+  );
+  await expect(cells('Participe passé', 1)).toHaveText(
+    [
+      "parlé n'ayant pas parlé", "fini n'ayant pas fini", "pris n'ayant pas pris",
+      "fait n'ayant pas fait", "venu n'étant pas venu", "ouvert n'ayant pas ouvert",
+    ],
+    lines,
+  );
+});

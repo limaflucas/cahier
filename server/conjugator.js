@@ -77,42 +77,91 @@ function pronominalized(verb, person, forms) {
   return verb.pronominal ? forms.map((form) => withReflexive(person, form, verb.infinitive)) : forms;
 }
 
+/**
+ * A form framed by ne … pas, ne elided before a vowel sound.
+ * @param {string} form the conjugated verb, or the auxiliary of a compound form, with its reflexive pronoun
+ * @param {string} infinitive the infinitive of the form, which tells a silent h from an aspirated one
+ * @param {string} [participle] the past participle that follows pas in a compound form
+ * @returns {string}
+ */
+function negated(form, infinitive, participle) {
+  const ne = startsWithVowelSound(form, infinitive) ? "n'" : 'ne ';
+  return participle ? `${ne}${form} pas ${participle}` : `${ne}${form} pas`;
+}
+
+/**
+ * The six cells of a simple tense, null where the verb has no form.
+ * @param {object} verb the described verb
+ * @param {string} tense
+ * @returns {({ label: string, answers: string[], negative: string } | null)[]}
+ */
 function simpleCells(verb, tense) {
   const key = SIMPLE_TENSES[tense];
   return PERSONS.map((person) => {
     const alternatives = verb.spelled[key]?.[person];
     if (!alternatives) return null;
     const answers = pronominalized(verb, person, alternatives);
-    return { label: subjectLabel(verb, tense, person, answers[0]), answers };
+    return { label: subjectLabel(verb, tense, person, answers[0]), answers, negative: negated(answers[0], verb.infinitive) };
   });
 }
 
+/**
+ * The six cells of a compound tense, with every auxiliary and agreement the verb accepts; the negative is the first answer's.
+ * @param {Record<string, object>} verbs the Lefff forms, by infinitive
+ * @param {object} verb the described verb
+ * @param {string} tense
+ * @returns {({ label: string, answers: string[], negative: string } | null)[]}
+ */
 function compoundCells(verbs, verb, tense) {
   const auxiliaryKey = SIMPLE_TENSES[COMPOUND_TENSES[tense]];
   const participles = verb.forms.K;
   return PERSONS.map((person) => {
     if (!participles?.[0] || !verb.spelled.P?.[person]) return null;
-    const answers = verb.auxiliaries.flatMap((auxiliary) => {
+    const compounds = verb.auxiliaries.flatMap((auxiliary) => {
       const auxiliaryForm = verbs[auxiliary][auxiliaryKey][person];
-      const conjugatedAuxiliary = verb.pronominal ? withReflexive(person, auxiliaryForm, auxiliary) : auxiliaryForm;
+      const conjugated = verb.pronominal ? withReflexive(person, auxiliaryForm, auxiliary) : auxiliaryForm;
       const agrees = auxiliary === 'être' && !verb.invariable;
       const forms = agrees ? participlesAgreeingWith(person, participles) : [participles[0]];
-      return forms.filter(Boolean).map((participle) => `${conjugatedAuxiliary} ${participle}`);
+      return forms.filter(Boolean).map((participle) => ({ auxiliary, conjugated, participle }));
     });
-    return { label: subjectLabel(verb, tense, person, answers[0]), answers: unique(answers) };
+    const answers = unique(compounds.map(({ conjugated, participle }) => `${conjugated} ${participle}`));
+    const [first] = compounds;
+    return {
+      label: subjectLabel(verb, tense, person, answers[0]),
+      answers,
+      negative: negated(first.conjugated, first.auxiliary, first.participle),
+    };
   });
 }
 
-const singleCell = (answers) => [answers ? { label: null, answers } : null];
+/**
+ * The one cell of a non-finite form, or null when the verb has none.
+ * @param {string[] | null} answers
+ * @param {string | null} negative
+ * @returns {({ label: null, answers: string[], negative: string } | null)[]}
+ */
+const singleCell = (answers, negative) => [answers ? { label: null, answers, negative } : null];
 
-function nonFiniteCells(verb) {
+/**
+ * The participles and the gérondif. The participe passé's negative is the compound participle's: n'ayant pas parlé.
+ * @param {Record<string, object>} verbs the Lefff forms, by infinitive
+ * @param {object} verb the described verb
+ * @returns {Record<'participePresent' | 'gerondif' | 'participePasse', ({ label: null, answers: string[], negative: string } | null)[]>}
+ */
+function nonFiniteCells(verbs, verb) {
   const presentParticiple = verb.spelled.G?.[0];
   const presentParticiples = presentParticiple ? pronominalized(verb, 2, presentParticiple) : null;
+  const negativeParticiple = presentParticiples && negated(presentParticiples[0], verb.infinitive);
   const pastParticiple = verb.forms.K?.[0];
+  const [auxiliary] = verb.auxiliaries;
+  const [auxiliaryParticiple] = pronominalized(verb, 2, verbs[auxiliary].G);
   return {
-    participePresent: singleCell(presentParticiples),
-    gerondif: singleCell(presentParticiples?.map((form) => `en ${form}`)),
-    participePasse: singleCell(pastParticiple ? [pastParticiple] : null),
+    participePresent: singleCell(presentParticiples, negativeParticiple),
+    gerondif: singleCell(presentParticiples?.map((form) => `en ${form}`), negativeParticiple && `en ${negativeParticiple}`),
+    participePasse: singleCell(
+      pastParticiple ? [pastParticiple] : null,
+      pastParticiple && negated(auxiliaryParticiple, auxiliary, pastParticiple),
+    ),
   };
 }
 
@@ -131,10 +180,16 @@ function describeVerb(data, { infinitive, pronominal }) {
   };
 }
 
+/**
+ * The conjugation board of a verb: every tense's cells, with their hints.
+ * @param {Record<string, object>} verbs the Lefff forms, by infinitive
+ * @param {{ infinitive: string, pronominal: boolean }} parsed
+ * @returns {{ verb: string, auxiliary: string, tenses: Record<string, { cells: object[], hints: object[] }> }}
+ */
 function buildBoard(verbs, parsed) {
   const verb = describeVerb(verbs[parsed.infinitive], parsed);
   const cells = {
-    ...nonFiniteCells(verb),
+    ...nonFiniteCells(verbs, verb),
     ...mapValues(SIMPLE_TENSES, (_key, tense) => simpleCells(verb, tense)),
     ...mapValues(COMPOUND_TENSES, (_auxiliaryTense, tense) => compoundCells(verbs, verb, tense)),
   };
